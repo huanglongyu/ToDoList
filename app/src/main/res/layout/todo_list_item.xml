@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="fill_parent"
-    android:orientation="horizontal"
-    android:minHeight="60dp" >
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
 
     <EditText
         android:id="@+id/item_info"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:layout_gravity="center_vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="#FFAABBCC"
         android:textSize="16sp" />
 </FrameLayout>

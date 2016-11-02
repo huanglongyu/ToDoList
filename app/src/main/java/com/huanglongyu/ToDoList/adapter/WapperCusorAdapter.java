@@ -3,6 +3,8 @@ package com.huanglongyu.ToDoList.adapter;
 import android.content.Context;
 import android.database.Cursor;
 import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
@@ -12,51 +14,53 @@ import android.widget.LinearLayout.LayoutParams;
 import com.huanglongyu.ToDoList.R;
 import com.huanglongyu.ToDoList.view.ToDoListView;
 
-public abstract class WapperCusorAdapter extends CursorAdapter{
+public abstract class WapperCusorAdapter extends CursorAdapter {
+    private static final String TAG = "WapperCusorAdapter";
 
     public WapperCusorAdapter(Context context, Cursor c) {
         super(context, c);
     }
 
-//    @Override
-//    public void bindView(View arg0, Context arg1, Cursor arg2) {
-//
-//    }
-
     @Override
-    public View newView(Context arg0, Cursor arg1, ViewGroup arg2) {
-        return InflateContent(arg0,arg1,arg2);
+    public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
+        return InflateContent(context, cursor, viewGroup);
     }
 
-    private View InflateContent(Context context, Cursor arg1, ViewGroup arg2) {
-        View itemContent = InflateItemView(context, arg1, arg2);
-        if (itemContent == null) {
+    private View InflateContent(Context context, Cursor cursor, ViewGroup viewGroup) {
+        View swipeCenterView = InflateItemView(context, cursor, viewGroup);
+        if (swipeCenterView == null) {
             throw new IllegalStateException("the itemView can't be null!");
         }
+
+        int margin = context.getResources().getDimensionPixelSize(R.dimen.todo_item_extra_margin);
+
         //first. set user's layout be full of screen
         DisplayMetrics dm = context.getResources().getDisplayMetrics();
-        int w_screen = dm.widthPixels;
+        int w_screen = dm.widthPixels - margin * 2;
         LayoutParams lp = new LayoutParams(w_screen, ViewGroup.LayoutParams.WRAP_CONTENT);
-        itemContent.setLayoutParams(lp);
+        swipeCenterView.setLayoutParams(lp);
 
         LinearLayout itemLayout = new LinearLayout(context);
-        itemLayout.setTag(R.id.TAG_HODLER_ID, itemContent.getTag());
+        itemLayout.setTag(R.id.TAG_HODLER_ID, swipeCenterView.getTag());
         itemLayout.setOrientation(LinearLayout.HORIZONTAL);
+        itemLayout.setGravity(Gravity.CENTER_VERTICAL);
+        itemLayout.setBackgroundColor(0xffffff);
 
         //second. add left view
-        View swipeLeftView = InflateLeftView(context, arg1, arg2);
+        View swipeLeftView = InflateLeftView(context, cursor, viewGroup);
         if (swipeLeftView != null) {
-            LayoutParams cookLp = (LayoutParams) swipeLeftView.getLayoutParams();
-            cookLp.setMarginStart(-cookLp.width);
+            LinearLayout.LayoutParams cookLp = (LinearLayout.LayoutParams) swipeLeftView.getLayoutParams();
+            cookLp.leftMargin = -cookLp.width;
+            cookLp.rightMargin = margin;
             swipeLeftView.setLayoutParams(cookLp);
             swipeLeftView.setTag(ToDoListView.ITEM_CONTENT_LEFT_TAG);
             itemLayout.addView(swipeLeftView);
         }
         //third. add middle view
-        itemLayout.addView(itemContent);
+        itemLayout.addView(swipeCenterView);
 
         //four. add right view
-        View swipeRightView = InflateRightView(context, arg1, arg2);
+        View swipeRightView = InflateRightView(context, cursor, viewGroup);
         if (swipeRightView != null) {
             swipeRightView.setTag(ToDoListView.ITEM_CONTENT_RIGHT_TAG);
             itemLayout.addView(swipeRightView);

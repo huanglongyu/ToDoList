@@ -39,7 +39,15 @@ public class DbHelper extends SQLiteOpenHelper {
             "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test9', '0', '0');",
             "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test10', '0', '0');",
             "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test11', '0', '0');",
-            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test12', '0', '0');"
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test12', '0', '0');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test13', '0', '0');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test14', '0', '0');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test15', '0', '0');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test16', '0', '0');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test17', '0', '0');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test18', '0', '0');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test19', '0', '0');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test20', '0', '0');"
     };
 
     public static synchronized DbHelper getInstance(Context context) {

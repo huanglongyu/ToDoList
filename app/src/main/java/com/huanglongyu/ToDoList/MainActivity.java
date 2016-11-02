@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 
@@ -37,12 +38,13 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
         initViews();
     }
 
     private void initViews() {
-        mToDoListView = (ToDoListView) findViewById(R.id.waterdrop_listview);
+        mToDoListView = (ToDoListView) findViewById(R.id.listview);
 //        list.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
         mToDoListAdapter = new ToDoListAdapter(this);
         mToDoListView.setOnItemClickListener(this);
@@ -169,7 +171,7 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
          View v = view.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG);
-         Utils.updateCurrentBackground(mTestCursorAdapter, mDataAccess, position -1, v);
+         Utils.updateCurrentBackground(this, mTestCursorAdapter, mDataAccess, position -1, v);
          listDataChanged();
     }
 

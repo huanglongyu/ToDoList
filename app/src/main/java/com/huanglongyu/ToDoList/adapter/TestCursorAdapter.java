@@ -69,7 +69,7 @@ public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouc
         et.setText(cursor.getString(cursor.getColumnIndex(DbHelper.CONTENT)));
         et.setTag(cursor.getInt(cursor.getColumnIndex(DbHelper.ID)));
 //        et.setTag(cursor.getPosition());
-        Utils.updateCurrentBackgroundWithoutSave(view.findViewWithTag(ITEM_VIEW_TAG), cursor);
+        Utils.updateCurrentBackgroundWithoutSave(context, view.findViewWithTag(ITEM_VIEW_TAG), cursor);
         int isDone = cursor.getInt(cursor.getColumnIndex(DbHelper.DONE));
         Logger.i("bindView:" + cursor.getInt(cursor.getColumnIndex(DbHelper.ID)) + " isDone:" + isDone);
         if (isDone == 1) {
@@ -95,21 +95,34 @@ public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouc
     }
 
     @Override
-    protected View InflateLeftView(Context arg0, Cursor arg1, ViewGroup arg2) {
-        ImageView left = new ImageView(arg0);
-        LayoutParams leftLp = new LayoutParams(100, ViewGroup.LayoutParams.WRAP_CONTENT);
-        left.setBackgroundResource(R.drawable.ic_launcher);
-        left.setLayoutParams(leftLp);
-        return left;
+    protected View InflateLeftView(Context context, Cursor cursor, ViewGroup viewGroup) {
+        ImageView view = new ImageView(context);
+        int w = context.getResources().getDimensionPixelSize(R.dimen.todo_item_extra_size);
+        LayoutParams leftLp = new LayoutParams(w, w);
+        view.setImageResource(R.drawable.ic_done);
+        view.setLayoutParams(leftLp);
+        return view;
     }
 
     @Override
-    protected View InflateRightView(Context arg0, Cursor arg1, ViewGroup arg2) {
-        ImageView right = new ImageView(arg0);
-        LayoutParams rightLp = new LayoutParams(100, ViewGroup.LayoutParams.WRAP_CONTENT);
-        right.setBackgroundResource(R.drawable.ic_launcher);
-        right.setLayoutParams(rightLp);
-        return right;
+    protected View InflateRightView(Context context, Cursor cursor, ViewGroup viewGroup) {
+        ImageView view = new ImageView(context);
+        int w = context.getResources().getDimensionPixelSize(R.dimen.todo_item_extra_size);
+        LayoutParams rightLp = new LayoutParams(w, w);
+        view.setImageResource(R.drawable.ic_clear);
+        view.setLayoutParams(rightLp);
+//        View view = mInflater.inflate(R.layout.todo_list_item_extra, null, false);
+//
+//        ImageView left = (ImageView)view.findViewById(R.id.todo_list_item_extra_ic);
+////        LayoutParams leftLp = new LayoutParams(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+//        left.setImageResource(R.drawable.ic_clear);
+////        left.setLayoutParams(leftLp);
+//
+////        ImageView right = new ImageView(arg0);
+////        LayoutParams rightLp = new LayoutParams(100, ViewGroup.LayoutParams.WRAP_CONTENT);
+////        right.setImageResource(R.drawable.ic_clear);
+////        right.setLayoutParams(rightLp);
+        return view;
     }
 
 //   private OnEditorActionListener editorActionListener = new OnEditorActionListener(){

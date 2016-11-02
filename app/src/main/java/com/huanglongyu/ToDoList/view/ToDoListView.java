@@ -26,6 +26,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Scroller;
 
+import com.huanglongyu.ToDoList.R;
 import com.huanglongyu.ToDoList.adapter.TestCursorAdapter;
 import com.huanglongyu.ToDoList.database.DbHelper;
 import com.huanglongyu.ToDoList.util.Logger;

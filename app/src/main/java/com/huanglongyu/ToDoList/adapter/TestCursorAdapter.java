@@ -111,17 +111,6 @@ public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouc
         LayoutParams rightLp = new LayoutParams(w, w);
         view.setImageResource(R.drawable.ic_clear);
         view.setLayoutParams(rightLp);
-//        View view = mInflater.inflate(R.layout.todo_list_item_extra, null, false);
-//
-//        ImageView left = (ImageView)view.findViewById(R.id.todo_list_item_extra_ic);
-////        LayoutParams leftLp = new LayoutParams(100, ViewGroup.LayoutParams.WRAP_CONTENT);
-//        left.setImageResource(R.drawable.ic_clear);
-////        left.setLayoutParams(leftLp);
-//
-////        ImageView right = new ImageView(arg0);
-////        LayoutParams rightLp = new LayoutParams(100, ViewGroup.LayoutParams.WRAP_CONTENT);
-////        right.setImageResource(R.drawable.ic_clear);
-////        right.setLayoutParams(rightLp);
         return view;
     }
 

@@ -5,12 +5,15 @@ import android.app.LoaderManager;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.RelativeLayout;
 
 import com.huanglongyu.ToDoList.adapter.TestCursorAdapter;
 import com.huanglongyu.ToDoList.adapter.ToDoListAdapter;
@@ -24,16 +27,19 @@ import com.huanglongyu.ToDoList.view.ToDoListView;
 
 
 public class MainActivity extends Activity implements OnItemClickListener,ToDoListView.OnToDoListViewTriggerListener,LoaderManager.LoaderCallbacks<Cursor> ,
-        DataAccess.DataObserverListener {
+        DataAccess.DataObserverListener, View.OnClickListener {
 
     private ToDoListView mToDoListView;
     private ToDoListAdapter mToDoListAdapter;
     private PreImeRelativeLayout mPreImeRelativeLayout;
+    private View dimView;
+    private int dimOffset;
 
     private DataAccess mDataAccess;
     private TestCursorAdapter mTestCursorAdapter;
     private static final boolean USE_CURSOR = true;
     private static final int LOADER_ID = 0;
+    private static final String TAG = "MainActivity";
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +50,11 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
     }
 
     private void initViews() {
+        dimView = findViewById(R.id.full_dim);
+        dimView.setOnClickListener(this);
+
         mToDoListView = (ToDoListView) findViewById(R.id.listview);
-//        list.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+//        mToDoListView.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
         mToDoListAdapter = new ToDoListAdapter(this);
         mToDoListView.setOnItemClickListener(this);
         mToDoListView.setOnToDoListViewTriggerListener(this);
@@ -82,20 +91,36 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
     }
 
     @Override
+    public void onHeaderInitFinished(int height) {
+        View view = findViewById(R.id.title);
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        int w = dm.widthPixels;
+        int h = dm.heightPixels - view.getHeight() - height;
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)dimView.getLayoutParams();
+        params.width = w;
+        params.height = h ;
+        params.topMargin = height + view.getHeight();
+        dimView.setLayoutParams(params);
+    }
+
+    @Override
     public void onDownTriggered() {
-        Logger.i("onDownTriggered");
+        Log.i(TAG , "onDownTriggered");
         mToDoListView.setHeaderFocus(true);
+        dimView.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onUpTriggered() {
         Logger.i("onUpTriggered");
         mToDoListView.setHeaderFocus(false);
+        dimView.setVisibility(View.GONE);
     }
 
     @Override
     public void onNewTaskCancelTriggered() {
         Logger.i("onNewTaskCancelTriggered");
+        dimView.setVisibility(View.GONE);
         mToDoListView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
         mToDoListView.HeadrollBack();
     }
@@ -103,6 +128,7 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
     @Override
     public void onNewTaskAddedTriggered(String item) {
         Logger.i("onNewTaskAddedTriggered");
+        dimView.setVisibility(View.GONE);
     }
 
     @Override
@@ -141,7 +167,7 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
     }
 
     @Override
-    public void onDissMiss(int dismissPosition) {
+    public void onTaskClear(int dismissPosition) {
         if (USE_CURSOR) {
             Cursor c = (Cursor)mTestCursorAdapter.getItem(dismissPosition);
             mDataAccess.removeItem(c.getInt(c.getColumnIndex(DbHelper.ID)));
@@ -175,4 +201,13 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
          listDataChanged();
     }
 
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.full_dim:
+                Log.i(TAG, "dim view clicked");
+                onNewTaskCancelTriggered();
+                break;
+        }
+    }
 }

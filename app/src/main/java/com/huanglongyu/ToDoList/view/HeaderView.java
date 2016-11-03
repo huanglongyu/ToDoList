@@ -24,7 +24,7 @@ import android.widget.TextView;
 
 import com.huanglongyu.ToDoList.R;
 
-public class HeaderView extends LinearLayout implements View.OnTouchListener{
+public class HeaderView extends LinearLayout implements View.OnTouchListener {
     private static final String TAG = "HeaderView";
     private LinearLayout mContainer;
     private EditText mEditText;
@@ -301,7 +301,6 @@ public class HeaderView extends LinearLayout implements View.OnTouchListener{
       int w_screen = dm.widthPixels;
       int pendding = getResources().getDimensionPixelSize(R.dimen.activity_horizontal_margin);
       LayoutParams lp = new LayoutParams(w_screen - pendding * 2, 0);
-//      LayoutParams lp = new LayoutParams(500, 0);
       lp.gravity = Gravity.CENTER;
       addView(mContainer, lp);
     }

@@ -49,7 +49,7 @@ public abstract class WapperCusorAdapter extends CursorAdapter {
         //second. add left view
         View swipeLeftView = InflateLeftView(context, cursor, viewGroup);
         if (swipeLeftView != null) {
-            LinearLayout.LayoutParams cookLp = (LinearLayout.LayoutParams) swipeLeftView.getLayoutParams();
+            LayoutParams cookLp = (LayoutParams) swipeLeftView.getLayoutParams();
             cookLp.leftMargin = -cookLp.width;
             cookLp.rightMargin = margin;
             swipeLeftView.setLayoutParams(cookLp);
@@ -62,6 +62,9 @@ public abstract class WapperCusorAdapter extends CursorAdapter {
         //four. add right view
         View swipeRightView = InflateRightView(context, cursor, viewGroup);
         if (swipeRightView != null) {
+            LayoutParams cookRp = (LayoutParams) swipeRightView.getLayoutParams();
+            cookRp.leftMargin = margin;
+            swipeRightView.setLayoutParams(cookRp);
             swipeRightView.setTag(ToDoListView.ITEM_CONTENT_RIGHT_TAG);
             itemLayout.addView(swipeRightView);
         }

@@ -14,7 +14,7 @@ public class Utils {
     private static int ISDONE = -100;
     private static final String TAG = "Utils";
 
-    private enum Colours {
+    public enum Colours {
         LIGHT_BLUE, RED, ORANGE, DARK_GREEN, LIGHT_GREEN, DARK_BLUE;
         public static final int _LIGHT_BLUE = LIGHT_BLUE.ordinal();
         public static final int _RED = RED.ordinal();

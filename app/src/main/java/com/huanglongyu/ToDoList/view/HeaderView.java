@@ -19,12 +19,13 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.huanglongyu.ToDoList.R;
 
-public class HeaderView extends LinearLayout implements View.OnTouchListener {
+public class HeaderView extends FrameLayout implements View.OnTouchListener {
     private static final String TAG = "HeaderView";
     private LinearLayout mContainer;
     private EditText mEditText;
@@ -87,7 +88,7 @@ public class HeaderView extends LinearLayout implements View.OnTouchListener {
 //        mEditText = (EditText)mContainer.findViewById(R.id.item_info);
         mEditText.setImeOptions(EditorInfo.IME_ACTION_SEND);
         mEditText.setInputType(EditorInfo.TYPE_CLASS_TEXT);
-        mEditText.setSingleLine(true);
+//        mEditText.setSingleLine(true);
         mEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 
                     @Override
@@ -107,6 +108,9 @@ public class HeaderView extends LinearLayout implements View.OnTouchListener {
                                }
                            } else {
                                Log.i(TAG, "add new item");
+                               mEditText.clearFocus();
+                               imm.hideSoftInputFromWindow(mEditText.getWindowToken(),0);
+                               mEditText.clearComposingText();
                                if(mOnHeaderTriggerListener != null){
                                    mOnHeaderTriggerListener.onNewTaskAddedTriggerd(v.getText().toString().trim());
                                }
@@ -278,6 +282,7 @@ public class HeaderView extends LinearLayout implements View.OnTouchListener {
         mContainer.buildDrawingCache();
         viewBitmap = mContainer.getDrawingCache();
         invalidate();
+//        Log.i(TAG, "isOverridDispatch:" + isOverridDispatch);
     }
 
     public void setMaxHeight(int max){
@@ -297,12 +302,22 @@ public class HeaderView extends LinearLayout implements View.OnTouchListener {
     }
 
     public void initHead(){
-      DisplayMetrics dm = getResources().getDisplayMetrics();
-      int w_screen = dm.widthPixels;
-      int pendding = getResources().getDimensionPixelSize(R.dimen.activity_horizontal_margin);
-      LayoutParams lp = new LayoutParams(w_screen - pendding * 2, 0);
-      lp.gravity = Gravity.CENTER;
-      addView(mContainer, lp);
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        int w_screen = dm.widthPixels;
+        int pendding = getResources().getDimensionPixelSize(R.dimen.activity_horizontal_margin);
+
+        Log.i(TAG, "Header content,  w_screen:" + w_screen + " HeaderW:" + (w_screen - pendding * 2));
+        LayoutParams lp = new LayoutParams(w_screen - pendding * 2, 0);
+        lp.gravity = Gravity.CENTER;
+        addView(mContainer, lp);
+        //this is for UI test
+//        setBackgroundColor(getResources().getColor(R.color.orange));
+    }
+
+    public void reset() {
+        setShowHeight(0);
+        isOverridDispatch = true;
+        mEditText.setText("");
     }
 
     @Override

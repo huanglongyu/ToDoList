@@ -33,7 +33,6 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
     private ToDoListAdapter mToDoListAdapter;
     private PreImeRelativeLayout mPreImeRelativeLayout;
     private View dimView;
-    private int dimOffset;
 
     private DataAccess mDataAccess;
     private TestCursorAdapter mTestCursorAdapter;
@@ -126,9 +125,17 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
     }
 
     @Override
-    public void onNewTaskAddedTriggered(String item) {
-        Logger.i("onNewTaskAddedTriggered");
+    public void onNewTaskAddedTriggered(final String content) {
+        Logger.i("onNewTaskAddedTriggered " + content);
         dimView.setVisibility(View.GONE);
+        mToDoListView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
+        mToDoListView.addNewItem(new ToDoListView.newItemAniamation() {
+            @Override
+            public void end() {
+                mDataAccess.addItem(content);
+                listDataChanged();
+            }
+        });
     }
 
     @Override

@@ -4,9 +4,13 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
+import com.huanglongyu.ToDoList.util.Utils;
 
 public class DataAccess {
 
+    private static final String TAG = "DataAccess";
     private DbHelper dbHelper;
     private SQLiteDatabase db;
 
@@ -28,6 +32,15 @@ public class DataAccess {
 
     public void removeItem(int id) {
         db.delete(DbHelper.TABLE_NAME, DbHelper.ID + " = " + id, null);
+    }
+
+    public void addItem(String content) {
+        ContentValues values = new ContentValues();
+        values.put(DbHelper.CONTENT, content);
+        values.put(DbHelper.DONE, DbHelper.ITEM_NOT_DONE);
+        values.put(DbHelper.COLOUR, Utils.Colours._DARK_BLUE);
+        long result = db.insert(DbHelper.TABLE_NAME, null, values);
+        Log.i(TAG, "addItem :" + result);
     }
 
     public void updateItemContent(int id, String newcontent) {
@@ -95,7 +108,7 @@ public class DataAccess {
 
     public Cursor getAll() {
         return db
-                .query(DbHelper.TABLE_NAME, null, null, null, null, null, null);
+                .query(DbHelper.TABLE_NAME, null, null, null, null, null, " _id desc");
     }
 
     public void clearDb() {

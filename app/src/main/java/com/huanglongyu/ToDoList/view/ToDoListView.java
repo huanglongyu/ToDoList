@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -17,15 +19,21 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
+import android.view.animation.ScaleAnimation;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Scroller;
 
+import com.huanglongyu.ToDoList.R;
 import com.huanglongyu.ToDoList.adapter.TestCursorAdapter;
 import com.huanglongyu.ToDoList.database.DbHelper;
 import com.huanglongyu.ToDoList.util.Logger;
@@ -44,6 +52,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     private float mLastX = -1, mDownX = -1;
     private boolean isTouchingScreen = false;// 手指是否触摸屏幕
     private final static float OFFSET_RADIO = 1.8f; // support iOS like pull
+    private final static String TAG = "ToDoListView";
     private OnToDoListViewTriggerListener mOnToDoListViewTriggerListener;
 
     private View itemView;
@@ -62,6 +71,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     private static final int DONE_ANIMATION_TIME = 200;
     private int velocityX;
     private int screenWidth;
+    private int itemMarin;
     private ArrayList<PendingDismissData> mPendingDismisses = new ArrayList<PendingDismissData>();
     private ArrayList<PendingDoneData> mPendingDone = new ArrayList<PendingDoneData>();
 
@@ -143,6 +153,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
 
         mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
         screenWidth = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getWidth();
+        itemMarin = context.getResources().getDimensionPixelSize(R.dimen.todo_item_extra_margin);
     }
 
     @Override
@@ -192,6 +203,8 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                     || (Math.abs(ev.getRawX() - mDownX) > mTouchSlop && Math.abs(ev
                     .getRawY() - mDownY) < mTouchSlop)) {
                 isSlide = true;
+            } else {
+                isSlide = false;
             }
             break;
         }
@@ -400,6 +413,43 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     public void HeadrollBack(){
         mScroller.startScroll(0, itemMaxHeight, 0, -itemMaxHeight, ROLLBACK_ANIMATION_TIME);
         this.invalidate();
+    }
+
+    public interface newItemAniamation {
+        void end();
+    }
+
+    public void addNewItem(final newItemAniamation mNewItemAniamation) {
+        final View view = mHeaderView.findViewById(R.id.header_parent);
+        int targetValue = screenWidth - 2 * itemMarin;
+        final int fromValue = view.getWidth();
+        Log.i(TAG, "targetValue:" + targetValue + " fromValue:" + fromValue + " viewW:" + " " + view.getLayoutParams().width);
+
+        ValueAnimator animator = ValueAnimator.ofInt(fromValue, targetValue).setDuration(150);
+        animator.setInterpolator(new LinearInterpolator());
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
+                params.width = (int)valueAnimator.getAnimatedValue();
+//                Log.i(TAG, "onAnimationUpdate :" + params.width);
+                view.setLayoutParams(params);
+                view.requestLayout();
+            }
+        });
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                mHeaderView.reset();
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
+                params.width = fromValue;
+                view.setLayoutParams(params);
+                mNewItemAniamation.end();
+
+            }
+        });
+        animator.start();
     }
 
     private void updateHeaderHeight(float delta) {

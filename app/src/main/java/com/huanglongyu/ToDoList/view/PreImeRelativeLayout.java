@@ -3,7 +3,10 @@ package com.huanglongyu.ToDoList.view;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.RelativeLayout;
+
+import com.huanglongyu.ToDoList.R;
 
 public class PreImeRelativeLayout extends RelativeLayout {
     private ToDoListView mToDoListView;
@@ -30,6 +33,8 @@ public class PreImeRelativeLayout extends RelativeLayout {
         if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
             if (mToDoListView.getHeadHeight() == mToDoListView.getHeadMaxHeight()
                     && mToDoListView.getHeadText().trim().equals("")) {
+                View view = findViewById(R.id.full_dim);
+                view.setVisibility(View.GONE);
                 mToDoListView.HeadrollBack();
             }
         }

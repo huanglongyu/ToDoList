@@ -356,7 +356,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
             if(mHeaderView.getBottom() > itemMaxHeight/2){
 //                int offset = itemMaxHeight - mHeaderView.getBottom();
                 int offset = itemMaxHeight - mHeaderView.getHeight();
-                Logger.i("ACTION_UP  down!!!!!!!!height:" + height + " " + " offset:" + offset + " getTop:" + mHeaderView.getTop() + " getBottom:" +  mHeaderView.getBottom()
+                Log.i(TAG, "ACTION_UP  down!!!!!!!!height:" + height + " " + " offset:" + offset + " getTop:" + mHeaderView.getTop() + " getBottom:" +  mHeaderView.getBottom()
                         + " getFirstVisiblePosition:" + getFirstVisiblePosition() + " itemMaxHeight:" + itemMaxHeight);
                 if(getFirstVisiblePosition() !=0){
 //                    Logger.i("up!!!!!!!! setShowHeight 0," + getFirstVisiblePosition());
@@ -365,9 +365,13 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                     break;
                 }
                 if(offset != 0){
-                    Logger.i("ACTION_UP down!!!!!!!! startScroll 1, needToMovedY:" + mHeaderView.getBottom());
+                    Log.i(TAG, "ACTION_UP down!!!!!!!! startScroll 1, needToMovedY:" + mHeaderView.getBottom());
                     mScroller.startScroll(0, height, 0, offset, SLID_ANIMATION_TIME);
                     this.invalidate();
+                } else if (offset == 0){
+                    if(mOnToDoListViewTriggerListener != null){
+                        mOnToDoListViewTriggerListener.onDownTriggered();
+                    }
                 }
             }else{
 //                int offset = mHeaderView.getBottom();

@@ -551,11 +551,11 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                 content.setBackgroundColor(color);
         }});
 
-        animator.addListener(new AnimatorListenerAdapter(){
+        animator.addListener(new AnimatorListenerAdapter() {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                if(mOnToDoListViewTriggerListener != null){
+                if (mOnToDoListViewTriggerListener != null) {
                     mOnToDoListViewTriggerListener.onToggleDone(donePosition - 1);
                 }
                 long time = SystemClock.uptimeMillis();

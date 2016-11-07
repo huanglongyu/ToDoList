@@ -59,9 +59,20 @@ public class DataAccess {
 
     public void updateItemIsDone(int id, int isDone) {
         ContentValues values = new ContentValues();
+        values.put(DbHelper.TIME_STAMP, System.currentTimeMillis());
         values.put(DbHelper.DONE, isDone);
         db.update(DbHelper.TABLE_NAME, values, DbHelper.ID + " = " + id,
                 null);
+
+//        ContentValues values = new ContentValues();
+//        values.put(DbHelper.DONE, isDone);
+//        Cursor c = getItem(id + "");
+//        c.moveToFirst();
+//        values.put(DbHelper.CONTENT, c.getString(c.getColumnIndex(DbHelper.CONTENT)));
+//        values.put(DbHelper.COLOUR, c.getInt(c.getColumnIndex(DbHelper.COLOUR)));
+//        values.put(DbHelper.TIME_STAMP, System.currentTimeMillis());
+//        db.insert(DbHelper.TABLE_NAME, null, values);
+//        removeItem(id);
     }
 
 //    public void createRow(String customer, String order, String address,
@@ -108,7 +119,7 @@ public class DataAccess {
 
     public Cursor getAll() {
         return db
-                .query(DbHelper.TABLE_NAME, null, null, null, null, null, " _id desc");
+                .query(DbHelper.TABLE_NAME, null, null, null, null, null, "done ,  time_stamp");
     }
 
     public void clearDb() {

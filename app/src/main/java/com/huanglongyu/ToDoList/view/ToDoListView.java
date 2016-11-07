@@ -203,8 +203,6 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                     || (Math.abs(ev.getRawX() - mDownX) > mTouchSlop && Math.abs(ev
                     .getRawY() - mDownY) < mTouchSlop)) {
                 isSlide = true;
-            } else {
-                isSlide = false;
             }
             break;
         }

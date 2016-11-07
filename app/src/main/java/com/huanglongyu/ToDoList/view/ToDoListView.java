@@ -356,8 +356,8 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
             if(mHeaderView.getBottom() > itemMaxHeight/2){
 //                int offset = itemMaxHeight - mHeaderView.getBottom();
                 int offset = itemMaxHeight - mHeaderView.getHeight();
-                Log.i(TAG, "ACTION_UP  down!!!!!!!!height:" + height + " " + " offset:" + offset + " getTop:" + mHeaderView.getTop() + " getBottom:" +  mHeaderView.getBottom()
-                        + " getFirstVisiblePosition:" + getFirstVisiblePosition() + " itemMaxHeight:" + itemMaxHeight);
+//                Log.i(TAG, "ACTION_UP  down!!!!!!!!height:" + height + " " + " offset:" + offset + " getTop:" + mHeaderView.getTop() + " getBottom:" +  mHeaderView.getBottom()
+//                        + " getFirstVisiblePosition:" + getFirstVisiblePosition() + " itemMaxHeight:" + itemMaxHeight);
                 if(getFirstVisiblePosition() !=0){
 //                    Logger.i("up!!!!!!!! setShowHeight 0," + getFirstVisiblePosition());
                     mHeaderView.setShowHeight(0);
@@ -365,7 +365,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                     break;
                 }
                 if(offset != 0){
-                    Log.i(TAG, "ACTION_UP down!!!!!!!! startScroll 1, needToMovedY:" + mHeaderView.getBottom());
+//                    Log.i(TAG, "ACTION_UP down!!!!!!!! startScroll 1, needToMovedY:" + mHeaderView.getBottom());
                     mScroller.startScroll(0, height, 0, offset, SLID_ANIMATION_TIME);
                     this.invalidate();
                 } else if (offset == 0){
@@ -415,6 +415,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     }
 
     public void HeadrollBack(){
+        mHeaderView.setOverridDispatch(true);
         mScroller.startScroll(0, itemMaxHeight, 0, -itemMaxHeight, ROLLBACK_ANIMATION_TIME);
         this.invalidate();
     }

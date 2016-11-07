@@ -282,7 +282,7 @@ public class HeaderView extends FrameLayout implements View.OnTouchListener {
         mContainer.buildDrawingCache();
         viewBitmap = mContainer.getDrawingCache();
         invalidate();
-//        Log.i(TAG, "isOverridDispatch:" + isOverridDispatch);
+        Log.i(TAG, "isOverridDispatch:" + isOverridDispatch);
     }
 
     public void setMaxHeight(int max){
@@ -318,6 +318,10 @@ public class HeaderView extends FrameLayout implements View.OnTouchListener {
         setShowHeight(0);
         isOverridDispatch = true;
         mEditText.setText("");
+    }
+
+    public void setOverridDispatch(boolean is) {
+        isOverridDispatch = is;
     }
 
     @Override

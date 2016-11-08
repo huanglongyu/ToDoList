@@ -72,4 +72,6 @@ public abstract class WapperAdapter extends BaseAdapter{
     
     protected abstract void bindItemView(Object object, Context context, int position);
 
+    public abstract void swapItems(int positionOne, int positionTwo);
+
 }

@@ -5,13 +5,18 @@ import java.util.ArrayList;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.os.Build;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -19,22 +24,21 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
-import android.view.animation.ScaleAnimation;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
+import android.widget.Adapter;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.Scroller;
 
 import com.huanglongyu.ToDoList.R;
 import com.huanglongyu.ToDoList.adapter.TestCursorAdapter;
+import com.huanglongyu.ToDoList.adapter.ToDoListAdapter;
 import com.huanglongyu.ToDoList.database.DbHelper;
 import com.huanglongyu.ToDoList.util.Logger;
 
@@ -75,6 +79,27 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     private ArrayList<PendingDismissData> mPendingDismisses = new ArrayList<PendingDismissData>();
     private ArrayList<PendingDoneData> mPendingDone = new ArrayList<PendingDoneData>();
 
+    //drag start
+    private float mLastMotionEventY = -1;
+    private long mMobileItemId = AdapterView.INVALID_POSITION;
+    private View dragItemView;
+    private int mOriginalMobileItemPosition = AdapterView.INVALID_POSITION;
+    private HoverDrawable mHoverDrawable;
+    private boolean isDrag = false;
+    private float mDragDownX, mDragDownY;
+    private Adapter mAdapter;
+    private SwitchViewAnimator mSwitchViewAnimator;
+    private boolean mIsSettlingHoverDrawable;
+    /**
+     * The default scroll amount in pixels.
+     */
+    private int mSmoothScrollPx;
+
+
+    private interface SwitchViewAnimator {
+
+        void animateSwitchView(final long switchId, final float translationY);
+    }
 
     public interface OnToDoListViewTriggerListener{
         void onDownTriggered();
@@ -148,17 +173,150 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         // init header view
         mHeaderView = new HeaderView(context);
         mHeaderView.setOnHeaderTriggerListener(this);
-        // mHeaderView.setStateChangedListener(this);
+//         mHeaderView.setStateChangedListener(this);
         addHeaderView(mHeaderView);
 
         mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
         screenWidth = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getWidth();
         itemMarin = context.getResources().getDimensionPixelSize(R.dimen.todo_item_extra_margin);
+
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+            mSwitchViewAnimator = new KitKatSwitchViewAnimator();
+        } else {
+            mSwitchViewAnimator = new LSwitchViewAnimator();
+        }
+
+        Resources r = getResources();
+        mSmoothScrollPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3, r.getDisplayMetrics());
+    }
+
+    private class SettleHoverDrawableAnimatorListener extends AnimatorListenerAdapter implements ValueAnimator.AnimatorUpdateListener {
+
+        @NonNull
+        private final HoverDrawable mAnimatingHoverDrawable;
+
+        @NonNull
+        private final View mAnimatingMobileView;
+
+        private SettleHoverDrawableAnimatorListener(@NonNull final HoverDrawable animatingHoverDrawable, @NonNull final View animatingMobileView) {
+            mAnimatingHoverDrawable = animatingHoverDrawable;
+            mAnimatingMobileView = animatingMobileView;
+        }
+
+        @Override
+        public void onAnimationStart(final Animator animation) {
+            mIsSettlingHoverDrawable = true;
+        }
+
+        @Override
+        public void onAnimationUpdate(final ValueAnimator animation) {
+            mAnimatingHoverDrawable.setTop((Integer) animation.getAnimatedValue());
+            postInvalidate();
+        }
+
+        @Override
+        public void onAnimationEnd(final Animator animation) {
+            mAnimatingMobileView.setVisibility(View.VISIBLE);
+            isDrag = false;
+            mHoverDrawable = null;
+            dragItemView = null;
+            mMobileItemId = AdapterView.INVALID_POSITION;
+            mOriginalMobileItemPosition = AdapterView.INVALID_POSITION;
+
+            mIsSettlingHoverDrawable = false;
+        }
+    }
+
+    private class LSwitchViewAnimator implements SwitchViewAnimator {
+
+        @Override
+        public void animateSwitchView(final long switchId, final float translationY) {
+            getViewTreeObserver().addOnPreDrawListener(new AnimateSwitchViewOnPreDrawListener(switchId, translationY));
+        }
+
+        private class AnimateSwitchViewOnPreDrawListener implements ViewTreeObserver.OnPreDrawListener {
+
+            private final long mSwitchId;
+
+            private final float mTranslationY;
+
+            AnimateSwitchViewOnPreDrawListener(final long switchId, final float translationY) {
+                mSwitchId = switchId;
+                mTranslationY = translationY;
+            }
+
+            @Override
+            public boolean onPreDraw() {
+                getViewTreeObserver().removeOnPreDrawListener(this);
+
+                View switchView = getViewForId(mSwitchId);
+                if (switchView != null) {
+                    switchView.setTranslationY(mTranslationY);
+                    switchView.animate().translationY(0).start();
+                }
+
+                assert dragItemView != null;
+                dragItemView.setVisibility(View.VISIBLE);
+                Log.i(TAG, "onPreDraw1 mMobileItemId:" + mMobileItemId + " " + dragItemView);
+                dragItemView = getViewForId(mMobileItemId);
+                Log.i(TAG, "onPreDraw2 " + dragItemView);
+                assert dragItemView != null;
+                dragItemView.setVisibility(View.INVISIBLE);
+                return true;
+            }
+        }
+    }
+
+    private class KitKatSwitchViewAnimator implements SwitchViewAnimator {
+
+        @Override
+        public void animateSwitchView(final long switchId, final float translationY) {
+            assert dragItemView != null;
+            getViewTreeObserver().addOnPreDrawListener(new AnimateSwitchViewOnPreDrawListener(dragItemView, switchId, translationY));
+            dragItemView = getViewForId(mMobileItemId);
+        }
+
+        private class AnimateSwitchViewOnPreDrawListener implements ViewTreeObserver.OnPreDrawListener {
+
+            private final View mPreviousMobileView;
+
+            private final long mSwitchId;
+
+            private final float mTranslationY;
+
+            AnimateSwitchViewOnPreDrawListener(final View previousMobileView, final long switchId, final float translationY) {
+                mPreviousMobileView = previousMobileView;
+                mSwitchId = switchId;
+                mTranslationY = translationY;
+            }
+
+            @Override
+            public boolean onPreDraw() {
+                getViewTreeObserver().removeOnPreDrawListener(this);
+
+                View switchView = getViewForId(mSwitchId);
+                if (switchView != null) {
+                    Log.i(TAG, "onPreDraw :" + mTranslationY);
+                    switchView.setTranslationY(mTranslationY);
+                    switchView.animate().translationY(0).start();
+                } else {
+                    Log.i(TAG, "switchView = null");
+                }
+
+                mPreviousMobileView.setVisibility(View.VISIBLE);
+
+                if (dragItemView != null) {
+                    dragItemView.setVisibility(View.INVISIBLE);
+                }
+                return true;
+            }
+        }
     }
 
     @Override
     public void setAdapter(final ListAdapter adapter) {
         super.setAdapter(adapter);
+        mAdapter = adapter;
         getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -175,8 +333,149 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         });
     }
 
+    public void startDragging(int position) {
+        position = position - getHeaderViewsCount();
+        if (mMobileItemId != AdapterView.INVALID_POSITION) {
+            /* We are already dragging */
+            Log.i(TAG, "startDragging We are already dragging");
+            return;
+        }
+
+        if (mLastMotionEventY < 0) {
+            throw new IllegalStateException("User must be touching the DynamicListView!");
+        }
+
+        if (mAdapter == null) {
+            throw new IllegalStateException("This DynamicListView has no adapter set!");
+        }
+
+        if (position < 0 || position >= mAdapter.getCount()) {
+            /* Out of bounds */
+            Log.i(TAG, "startDragging Out of bounds");
+            return;
+        }
+        dragItemView = getChildAt(position - getFirstVisiblePosition() + getHeaderViewsCount());
+        Log.i(TAG, "startDragging, getFirstVisiblePosition: " + getFirstVisiblePosition() + " current position:" + position + " Header:" + getHeaderViewsCount());
+        if (dragItemView != null) {
+            isDrag = true;
+            mOriginalMobileItemPosition = position;
+            mMobileItemId = mAdapter.getItemId(position);
+            mHoverDrawable = new HoverDrawable(dragItemView, mLastMotionEventY);
+            dragItemView.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private View getViewForId(final long itemId) {
+        if (itemId == AdapterView.INVALID_POSITION || getAdapter() == null) {
+            return null;
+        }
+        int firstVisiblePosition = getFirstVisiblePosition();
+        View result = null;
+        for (int i = 0; i < getChildCount() && result == null; i++) {
+            int position = firstVisiblePosition + i;
+            if (position >= 0) {
+                long id = getAdapter().getItemId(position);
+                if (id == itemId) {
+                    result = getChildAt(i);
+                }
+            }
+        }
+        return result;
+    }
+
+    private int getPositionForId(final long itemId) {
+        View v = getViewForId(itemId);
+        if (v == null) {
+            return AdapterView.INVALID_POSITION;
+        } else {
+            return getPositionForView(v) - getHeaderViewsCount();
+        }
+    }
+
+    private void switchViews(final View switchView, final long switchId, final float translationY) {
+        assert mHoverDrawable != null;
+        assert getAdapter() != null;
+        assert dragItemView != null;
+
+        final int switchViewPosition = getPositionForView(switchView);
+        int mobileViewPosition = getPositionForView(dragItemView);
+
+        if (mAdapter instanceof ToDoListAdapter) {
+            ((ToDoListAdapter) mAdapter).swapItems(switchViewPosition - getHeaderViewsCount(), mobileViewPosition - getHeaderViewsCount());
+            ((BaseAdapter) mAdapter).notifyDataSetChanged();
+        } else if (mAdapter instanceof TestCursorAdapter) {
+            ((TestCursorAdapter) mAdapter).swapItems(switchViewPosition - getHeaderViewsCount(), mobileViewPosition - getHeaderViewsCount());
+        }
+
+        mHoverDrawable.shift(switchView.getHeight());
+        mSwitchViewAnimator.animateSwitchView(switchId, translationY);
+    }
+
+    private void switchIfNecessary() {
+        if (mHoverDrawable == null || mAdapter == null) {
+            return;
+        }
+
+        if (mHoverDrawable == null || mAdapter == null) {
+            return;
+        }
+
+        int listDatePosition = getPositionForId(mMobileItemId);
+
+        long aboveItemId = listDatePosition - 1  >= 0 ? mAdapter.getItemId(listDatePosition - 1) : AdapterView.INVALID_POSITION;
+        long belowItemId = listDatePosition + 1 < getCount() - getHeaderViewsCount()
+                ? mAdapter.getItemId(listDatePosition + 1)
+                : AdapterView.INVALID_POSITION;
+
+        Log.i(TAG, "listDatePosition:" + listDatePosition + " aboveItemId:" + aboveItemId + " belowItemId:" + belowItemId);
+
+        final long switchId = mHoverDrawable.isMovingUpwards() ? aboveItemId : belowItemId;
+        View switchView = getViewForId(switchId);
+
+        final int deltaY = mHoverDrawable.getDeltaY();
+        if (switchView != null && Math.abs(deltaY) > mHoverDrawable.getIntrinsicHeight()) {
+            switchViews(switchView, switchId, mHoverDrawable.getIntrinsicHeight() * (deltaY < 0 ? -1 : 1));
+        }
+
+        handleMobileCellScroll();
+
+        invalidate();
+    }
+
+    void handleMobileCellScroll() {
+        if (mHoverDrawable == null || mIsSettlingHoverDrawable) {
+            return;
+        }
+
+        Rect r = mHoverDrawable.getBounds();
+        int offset = computeVerticalScrollOffset();
+        int height = getHeight();
+        int extent = computeVerticalScrollExtent();
+        int range = computeVerticalScrollRange();
+        int hoverViewTop = r.top;
+        int hoverHeight = r.height();
+
+        int scrollPx = (int) Math.max(1, mSmoothScrollPx * 1.0);
+        if (hoverViewTop <= 0 && offset > 0) {
+            smoothScrollBy(-scrollPx, 0);
+        } else if (hoverViewTop + hoverHeight >= height && offset + extent < range) {
+            smoothScrollBy(scrollPx, 0);
+        }
+    }
+
+    @Override
+    protected void dispatchDraw(Canvas canvas) {
+        super.dispatchDraw(canvas);
+        if (mHoverDrawable != null) {
+            mHoverDrawable.draw(canvas);
+        }
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (isDrag) {
+            return super.dispatchTouchEvent(ev);
+        }
         switch (ev.getAction()) {
         case MotionEvent.ACTION_DOWN: {
             addVelocityTracker(ev);
@@ -280,8 +579,65 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         }
     }
 
+    private boolean handleUpEvent() {
+        if (dragItemView == null) {
+            return false;
+        }
+        assert mHoverDrawable != null;
+
+        ValueAnimator valueAnimator = ValueAnimator.ofInt(mHoverDrawable.getTop(), (int) dragItemView.getY());
+        SettleHoverDrawableAnimatorListener listener = new SettleHoverDrawableAnimatorListener(mHoverDrawable, dragItemView);
+        valueAnimator.addUpdateListener(listener);
+        valueAnimator.addListener(listener);
+        valueAnimator.start();
+
+//        int newPosition = getPositionForId(mMobileItemId) - getHeaderViewsCount();
+//        if (mOriginalMobileItemPosition != newPosition && mOnItemMovedListener != null) {
+//            mOnItemMovedListener.onItemMoved(mOriginalMobileItemPosition, newPosition);
+//        }
+        return true;
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        mLastMotionEventY = ev.getY();
+        if (isDrag) {
+            /* We are in the process of animating the hover drawable back, do not start a new drag yet. */
+            if (mIsSettlingHoverDrawable) {
+                return false;
+            }
+            boolean handled = false;
+            switch (ev.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN:
+                    mLastMotionEventY = ev.getY();
+                    mDragDownX = ev.getRawX();
+                    mDragDownY = ev.getRawY();
+                    handled = true;
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    mLastMotionEventY = ev.getY();
+                    mHoverDrawable.handleMoveEvent(ev);
+                    switchIfNecessary();
+                    invalidate();
+                    handled = true;
+                    break;
+                case MotionEvent.ACTION_UP:
+                    handleUpEvent();
+                    mLastMotionEventY = -1;
+                    handled = true;
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                    handleUpEvent();
+//                    handled = handleCancelEvent();
+                    mLastMotionEventY = -1;
+                    handled = true;
+                    break;
+                default:
+                    break;
+            }
+            return handled;
+        }
+
         if (isSlide && slidePosition != AdapterView.INVALID_POSITION) {
             addVelocityTracker(ev);
             switch (ev.getAction()) {
@@ -558,18 +914,23 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                 if (mOnToDoListViewTriggerListener != null) {
                     mOnToDoListViewTriggerListener.onToggleDone(donePosition - 1);
                 }
-                long time = SystemClock.uptimeMillis();
-                MotionEvent cancelEvent = MotionEvent.obtain(time, time,
-                        MotionEvent.ACTION_CANCEL, 0, 0, 0);
-                cancelEvent.setAction(MotionEvent.ACTION_CANCEL);
-                onTouchEvent(cancelEvent);
-                cancelEvent.recycle();
+                sendCancelEvent();
             }
 
         });
 //        mPendingDone.add(new PendingDoneData(donePosition, doneView));
         animator.start();
         animatorColor.start();
+    }
+
+    private void sendCancelEvent() {
+        // Cancel ListView's touch (un-highlighting the item)
+        long time = SystemClock.uptimeMillis();
+        MotionEvent cancelEvent = MotionEvent.obtain(time, time,
+                MotionEvent.ACTION_CANCEL, 0, 0, 0);
+        cancelEvent.setAction(MotionEvent.ACTION_CANCEL);
+        onTouchEvent(cancelEvent);
+        cancelEvent.recycle();
     }
 
     class PendingDismissData implements Comparable<PendingDismissData> {
@@ -613,13 +974,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                     lp.height = originalHeight;
                     pendingDismiss.view.setLayoutParams(lp);
                 }
-                // Cancel ListView's touch (un-highlighting the item)
-                long time = SystemClock.uptimeMillis();
-                MotionEvent cancelEvent = MotionEvent.obtain(time, time,
-                        MotionEvent.ACTION_CANCEL, 0, 0, 0);
-                cancelEvent.setAction(MotionEvent.ACTION_CANCEL);
-                onTouchEvent(cancelEvent);
-                cancelEvent.recycle();
+                sendCancelEvent();
             }
         });
         mPendingDismisses.add(new PendingDismissData(dismissPosition, dismissView));

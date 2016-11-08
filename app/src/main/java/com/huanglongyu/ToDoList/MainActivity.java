@@ -27,7 +27,7 @@ import com.huanglongyu.ToDoList.view.ToDoListView;
 
 
 public class MainActivity extends Activity implements OnItemClickListener,ToDoListView.OnToDoListViewTriggerListener,LoaderManager.LoaderCallbacks<Cursor> ,
-        DataAccess.DataObserverListener, View.OnClickListener {
+        DataAccess.DataObserverListener, View.OnClickListener, AdapterView.OnItemLongClickListener {
 
     private ToDoListView mToDoListView;
     private ToDoListAdapter mToDoListAdapter;
@@ -57,6 +57,7 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
         mToDoListAdapter = new ToDoListAdapter(this);
         mToDoListView.setOnItemClickListener(this);
         mToDoListView.setOnToDoListViewTriggerListener(this);
+        mToDoListView.setOnItemLongClickListener(this);
 
         mPreImeRelativeLayout = (PreImeRelativeLayout)findViewById(R.id.parent);
         mPreImeRelativeLayout.setToDoListView(mToDoListView);
@@ -64,7 +65,7 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
         mDataAccess = new DataAccess(this);
         mDataAccess.openDb();
 //        mDataAccess.clearDb();
-        mTestCursorAdapter = new TestCursorAdapter(this,mDataAccess.getAll());
+        mTestCursorAdapter = new TestCursorAdapter(this, mDataAccess);
         mTestCursorAdapter.setDataObserverListener(this);
         if (USE_CURSOR) {
             mToDoListView.setAdapter(mTestCursorAdapter);
@@ -206,6 +207,14 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
          View v = view.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG);
          Utils.updateCurrentBackground(this, mTestCursorAdapter, mDataAccess, position -1, v);
          listDataChanged();
+    }
+
+    @Override
+    public boolean onItemLongClick(final AdapterView<?> parent, final View view,
+                                   final int position, final long id) {
+        mToDoListView.startDragging(position);
+        //do not send the event to onItemClick
+        return true;
     }
 
     @Override

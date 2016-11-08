@@ -30,12 +30,12 @@ public class DbHelper extends SQLiteOpenHelper {
                     + DONE   + " integer not null);";
 
     private String[] statements = {
-            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test1', '7', '0', '0');",
-            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test2', '7', '1', '0');",
-            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test3', '7', '0', '0');",
-            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test4', '7', '1', '0');",
-            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test5', '7', '0', '0');",
-            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test6', '7', '0', '0');"
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test1', '7', '0', '1');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test2', '7', '1', '2');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test3', '7', '0', '3');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test4', '7', '1', '4');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test5', '7', '0', '5');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test6', '7', '0', '6');"
 //            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test7', '0', '0');",
 //            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test8', '0', '0');",
 //            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test9', '0', '0');",

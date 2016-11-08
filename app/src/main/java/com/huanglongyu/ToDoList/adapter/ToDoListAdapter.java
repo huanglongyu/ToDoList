@@ -1,10 +1,12 @@
 package com.huanglongyu.ToDoList.adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout.LayoutParams;
@@ -14,6 +16,8 @@ import com.huanglongyu.ToDoList.R;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
 //use CursorAdapter instead of 
 
 public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListener{
@@ -21,13 +25,12 @@ public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListen
 
     private LayoutInflater mInflater = null;
     private List<String> data = new ArrayList<String>();
+    private static final String TAG = "ToDoListAdapter";
 
     public ToDoListAdapter(Context context) {
         super(context);
         this.mInflater = LayoutInflater.from(context);
-        data.add("To see a world in a grain of sand,");
-        data.add("And a heaven in a wild flower,");
-        data.add("Hold infinity in the palm of your hand,");
+        data.add("And eternity in an hour0.");
         data.add("And eternity in an hour1.");
         data.add("And eternity in an hour2.");
         data.add("And eternity in an hour3.");
@@ -64,16 +67,32 @@ public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListen
     }
 
     @Override
-    public Object getItem(int position) {
-        return position;
+    public boolean hasStableIds() {
+        return true;
+    }
+
+    @Override
+    public String getItem(int position) {
+//        return position;
+        return data.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return position;
+//        Log.i("TestCursorAdapter", "getItemId:" + (position + 1000));
+//        return position + 1000;
+        Log.i(TAG, "getItemId:" + position + " value:" + getItem(position).hashCode());
+        return getItem(position).hashCode();
     }
 
-//    @Override
+    @Override
+    public void swapItems(int positionOne, int positionTwo) {
+        String firstItem = data.set(positionOne, getItem(positionTwo));
+        notifyDataSetChanged();
+        data.set(positionTwo, firstItem);
+    }
+
+    //    @Override
 //    public View getView(int position, View convertView, ViewGroup parent) {
 //        ViewHolder holder = null;
 //        if (convertView == null) {
@@ -99,6 +118,15 @@ public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListen
     @Override
     protected View InflateItemView(View convertView, int position,
             ViewGroup parent) {
+//        ViewHolder holder = new ViewHolder();
+//        View view = mInflater.inflate(R.layout.todo_list_item, null);
+//        holder.info = (TextView) view.findViewById(R.id.item_info);
+//        // holder.view = convertView;
+//        holder.info.setOnTouchListener(this);
+//        view.setOnTouchListener(this);
+//        view.setTag(holder);
+//        holder.info.setText((String) data.get(position));
+//        return view;
         ViewHolder holder = new ViewHolder();
         View view = mInflater.inflate(R.layout.todo_list_item, null);
         holder.info = (TextView) view.findViewById(R.id.item_info);
@@ -106,6 +134,9 @@ public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListen
         holder.info.setOnTouchListener(this);
         view.setOnTouchListener(this);
         view.setTag(holder);
+        EditText et = (EditText) view.findViewById(R.id.item_info);
+        et.setOnTouchListener(this);
+        et.setImeOptions(EditorInfo.IME_ACTION_SEND);
         holder.info.setText((String) data.get(position));
         return view;
     }
@@ -121,20 +152,22 @@ public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListen
     @Override
     protected View InflateLeftView(Context context, int position,
             ViewGroup parent) {
-        ImageView left = new ImageView(context);
-        LayoutParams leftLp = new LayoutParams(100, ViewGroup.LayoutParams.WRAP_CONTENT);
-        left.setBackgroundResource(R.drawable.ic_launcher);
-        left.setLayoutParams(leftLp);
-        return left;
+        ImageView view = new ImageView(context);
+        int w = context.getResources().getDimensionPixelSize(R.dimen.todo_item_extra_size);
+        LayoutParams leftLp = new LayoutParams(w, w);
+        view.setImageResource(R.drawable.ic_done);
+        view.setLayoutParams(leftLp);
+        return view;
     }
 
     @Override
     protected View InflateRightView(Context context, int position,
             ViewGroup parent) {
-        ImageView right = new ImageView(context);
-        LayoutParams rightLp = new LayoutParams(100, ViewGroup.LayoutParams.WRAP_CONTENT);
-        right.setBackgroundResource(R.drawable.ic_launcher);
-        right.setLayoutParams(rightLp);
-        return right;
+        ImageView view = new ImageView(context);
+        int w = context.getResources().getDimensionPixelSize(R.dimen.todo_item_extra_size);
+        LayoutParams rightLp = new LayoutParams(w, w);
+        view.setImageResource(R.drawable.ic_clear);
+        view.setLayoutParams(rightLp);
+        return view;
     }
 }

@@ -44,6 +44,12 @@ public class DataAccess {
         Log.i(TAG, "addItem :" + result);
     }
 
+    public void updateItemAll(int id, ContentValues values) {
+        long result = db.update(DbHelper.TABLE_NAME, values, DbHelper.ID + " = " + id,
+                null);
+        Log.i(TAG, "updateItemAll result:" + result);
+    }
+
     public void updateItemContent(int id, String newcontent) {
         ContentValues values = new ContentValues();
         values.put(DbHelper.CONTENT, newcontent);
@@ -120,7 +126,9 @@ public class DataAccess {
 
     public Cursor getAll() {
         return db
-                .query(DbHelper.TABLE_NAME, null, null, null, null, null, "done ,  time_stamp,  _id desc");
+                .query(DbHelper.TABLE_NAME, null, null, null, null, null, null);
+//        return db
+//                .query(DbHelper.TABLE_NAME, null, null, null, null, null, "done ,  time_stamp,  _id desc");
     }
 
     public void clearDb() {

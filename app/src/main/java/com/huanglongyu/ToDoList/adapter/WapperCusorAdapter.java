@@ -77,4 +77,6 @@ public abstract class WapperCusorAdapter extends CursorAdapter {
     protected abstract View InflateLeftView(Context arg0, Cursor arg1, ViewGroup arg2);
 
     protected abstract View InflateRightView(Context arg0, Cursor arg1, ViewGroup arg2);
+
+    public abstract void swapItems(int positionOne, int positionTwo);
 }

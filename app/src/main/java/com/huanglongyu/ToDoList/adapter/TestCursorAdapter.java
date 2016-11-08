@@ -1,7 +1,9 @@
 package com.huanglongyu.ToDoList.adapter;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,14 +20,19 @@ import com.huanglongyu.ToDoList.util.Logger;
 import com.huanglongyu.ToDoList.util.Utils;
 
 public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouchListener{
+    private static final String TAG = "TestCursorAdapter";
     private LayoutInflater mInflater;
     private EditText listenedEditText;
     private DataAccess.DataObserverListener mDataObserverListener;
     public static final int ITEM_VIEW_TAG = 1;
+    private Cursor mCursor;
+    private DataAccess mDataAccess;
 
-    public TestCursorAdapter(Context context, Cursor c) {
-        super(context, c);
+    public TestCursorAdapter(Context context, DataAccess access) {
+        super(context, access.getAll());
         mInflater = LayoutInflater.from(context);
+        mDataAccess = access;
+        mCursor = mDataAccess.getAll();
     }
 
     public void setDataObserverListener(DataAccess.DataObserverListener l) {
@@ -40,6 +47,20 @@ public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouc
 //        et.setOnTouchListener(this);
 //        return  view;
 //    }
+
+
+    @Override
+    public long getItemId(int position) {
+        Cursor c = (Cursor) getItem(position);
+        String content = c.getString(c.getColumnIndex(DbHelper.CONTENT));
+        int id = c.getInt(c.getColumnIndex(DbHelper.ID));
+        int time = c.getInt(c.getColumnIndex(DbHelper.TIME_STAMP));
+        int color = c.getInt(c.getColumnIndex(DbHelper.COLOUR));
+        long hascode = content.hashCode();
+        Log.i(TAG, "getItemId:" + hascode + " position:" + position + " content:" + content +
+                " id:" + id + " time:" + time + " color:" + color);
+        return hascode;
+    }
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -114,7 +135,43 @@ public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouc
         return view;
     }
 
-//   private OnEditorActionListener editorActionListener = new OnEditorActionListener(){
+    @Override
+    public void swapItems(int positionOne, int positionTwo) {
+        if (mCursor != null) {
+            mCursor.moveToPosition(positionOne);
+            int oneRowId = mCursor.getInt(mCursor.getColumnIndex(DbHelper.ID));
+            String oneContent = mCursor.getString(mCursor.getColumnIndex(DbHelper.CONTENT));
+            ContentValues one = getCurrentValues(mCursor);
+
+            mCursor.moveToPosition(positionTwo);
+            int towRowId = mCursor.getInt(mCursor.getColumnIndex(DbHelper.ID));
+            String twoContent = mCursor.getString(mCursor.getColumnIndex(DbHelper.CONTENT));
+            ContentValues two = getCurrentValues(mCursor);
+
+            Log.i("swapItems", "oneRowId:" + oneRowId + " oneContent:" + oneContent +
+                    " towRowId:" + towRowId + " twoContent:" + twoContent + " positionOne:" + positionOne +
+                    " positionTwo:" + positionTwo);
+            mDataAccess.updateItemAll(towRowId , one);
+            swapCursor(mDataAccess.getAll());
+            mDataAccess.updateItemAll(oneRowId, two);
+            swapCursor(mDataAccess.getAll());
+            mCursor = mDataAccess.getAll();
+        }
+    }
+
+    private ContentValues getCurrentValues(Cursor c) {
+        if (c != null) {
+            ContentValues values = new ContentValues();
+            values.put(DbHelper.DONE, c.getInt(c.getColumnIndex(DbHelper.DONE)));
+//            values.put(DbHelper.TIME_STAMP, c.getInt(c.getColumnIndex(DbHelper.TIME_STAMP)));
+            values.put(DbHelper.COLOUR, c.getInt(c.getColumnIndex(DbHelper.COLOUR)));
+            values.put(DbHelper.CONTENT, c.getString(c.getColumnIndex(DbHelper.CONTENT)));
+            return values;
+        }
+        return  null;
+    }
+
+    //   private OnEditorActionListener editorActionListener = new OnEditorActionListener(){
 //
 //    @Override
 //    public boolean onEditorAction(TextView v, int actionId,KeyEvent event) {

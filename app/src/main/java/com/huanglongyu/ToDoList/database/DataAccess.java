@@ -39,6 +39,7 @@ public class DataAccess {
         values.put(DbHelper.CONTENT, content);
         values.put(DbHelper.DONE, DbHelper.ITEM_NOT_DONE);
         values.put(DbHelper.COLOUR, Utils.Colours._DARK_BLUE);
+        values.put(DbHelper.TIME_STAMP, 0);
         long result = db.insert(DbHelper.TABLE_NAME, null, values);
         Log.i(TAG, "addItem :" + result);
     }
@@ -119,7 +120,7 @@ public class DataAccess {
 
     public Cursor getAll() {
         return db
-                .query(DbHelper.TABLE_NAME, null, null, null, null, null, "done ,  time_stamp");
+                .query(DbHelper.TABLE_NAME, null, null, null, null, null, "done ,  time_stamp,  _id desc");
     }
 
     public void clearDb() {

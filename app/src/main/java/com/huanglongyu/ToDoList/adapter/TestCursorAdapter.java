@@ -1,8 +1,12 @@
 package com.huanglongyu.ToDoList.adapter;
 
+import android.app.Activity;
+import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Loader;
 import android.database.Cursor;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -15,31 +19,52 @@ import android.widget.LinearLayout.LayoutParams;
 
 import com.huanglongyu.ToDoList.R;
 import com.huanglongyu.ToDoList.database.DataAccess;
+import com.huanglongyu.ToDoList.database.DataLoader;
 import com.huanglongyu.ToDoList.database.DbHelper;
 import com.huanglongyu.ToDoList.util.Logger;
 import com.huanglongyu.ToDoList.util.Utils;
 
-public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouchListener{
+public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouchListener, LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "TestCursorAdapter";
     private LayoutInflater mInflater;
     private EditText listenedEditText;
     private DataAccess.DataObserverListener mDataObserverListener;
     public static final int ITEM_VIEW_TAG = 1;
+    private static final int LOADER_ID = 0;
     private Cursor mCursor;
+    private Context mContext;
     private DataAccess mDataAccess;
 
     public TestCursorAdapter(Context context, DataAccess access) {
         super(context, access.getAll());
+        mContext = context;
         mInflater = LayoutInflater.from(context);
         mDataAccess = access;
         mCursor = mDataAccess.getAll();
+        ((Activity)context).getLoaderManager().initLoader(LOADER_ID, null, this);
     }
 
     public void setDataObserverListener(DataAccess.DataObserverListener l) {
         mDataObserverListener = l;
     }
 
-//    @Override
+    @Override
+    public Loader<Cursor> onCreateLoader(int loaderID, Bundle bundle) {
+        if (loaderID == LOADER_ID) {
+            return new DataLoader(mContext, mDataAccess);
+        }
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> arg0) {}
+
+    //    @Override
 //    public View newView(Context arg0, Cursor arg1, ViewGroup arg2) {
 //        View view = mInflater.inflate(R.layout.todo_list_item, null, false); 
 //        view.setOnTouchListener(this);

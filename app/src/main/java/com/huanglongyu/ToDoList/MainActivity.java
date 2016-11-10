@@ -18,7 +18,6 @@ import android.widget.RelativeLayout;
 import com.huanglongyu.ToDoList.adapter.TestCursorAdapter;
 import com.huanglongyu.ToDoList.adapter.ToDoListAdapter;
 import com.huanglongyu.ToDoList.database.DataAccess;
-import com.huanglongyu.ToDoList.database.DataLoader;
 import com.huanglongyu.ToDoList.database.DbHelper;
 import com.huanglongyu.ToDoList.util.Logger;
 import com.huanglongyu.ToDoList.util.Utils;
@@ -26,7 +25,7 @@ import com.huanglongyu.ToDoList.view.PreImeRelativeLayout;
 import com.huanglongyu.ToDoList.view.ToDoListView;
 
 
-public class MainActivity extends Activity implements OnItemClickListener,ToDoListView.OnToDoListViewTriggerListener,LoaderManager.LoaderCallbacks<Cursor> ,
+public class MainActivity extends Activity implements OnItemClickListener, ToDoListView.OnToDoListViewTriggerListener,
         DataAccess.DataObserverListener, View.OnClickListener, AdapterView.OnItemLongClickListener {
 
     private ToDoListView mToDoListView;
@@ -37,7 +36,6 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
     private DataAccess mDataAccess;
     private TestCursorAdapter mTestCursorAdapter;
     private static final boolean USE_CURSOR = true;
-    private static final int LOADER_ID = 0;
     private static final String TAG = "MainActivity";
     
     @Override
@@ -72,8 +70,6 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
         } else {
             mToDoListView.setAdapter(mToDoListAdapter);
         }
-//        getLoaderManager().initLoader(LOADER_ID, null, this).forceLoad();
-        getLoaderManager().initLoader(LOADER_ID, null, this);
     }
 
     @Override
@@ -137,30 +133,6 @@ public class MainActivity extends Activity implements OnItemClickListener,ToDoLi
                 listDataChanged();
             }
         });
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int loaderID, Bundle bundle) {
-        if (loaderID == LOADER_ID) {
-            return new DataLoader(this, mDataAccess);
-        }
-        return null;
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mTestCursorAdapter.swapCursor(data);
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> arg0) {}
-
-    public boolean onQueryTextChanged() {
-        // Called when the action bar search text has changed.  Update
-        // the search filter, and restart the loader to do a new query
-        // with this filter.
-        getLoaderManager().restartLoader(LOADER_ID, null, this).forceLoad();
-        return true;
     }
 
     private void listDataChanged() {

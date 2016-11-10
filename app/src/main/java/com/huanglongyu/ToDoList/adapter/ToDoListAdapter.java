@@ -34,7 +34,8 @@ public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListen
     }
 
     public void remove(int position) {
-        data.remove(position);
+        ToDoitem toDoitem = data.remove(position);
+        mDataAccess.removeItem(toDoitem.getId());
         notifyDataSetChanged();
     }
 

@@ -6,7 +6,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.huanglongyu.ToDoList.bean.ToDoitem;
 import com.huanglongyu.ToDoList.util.Utils;
+
+import java.util.ArrayList;
 
 public class DataAccess {
 
@@ -38,7 +41,7 @@ public class DataAccess {
         ContentValues values = new ContentValues();
         values.put(DbHelper.CONTENT, content);
         values.put(DbHelper.DONE, DbHelper.ITEM_NOT_DONE);
-        values.put(DbHelper.COLOUR, Utils.Colours._DARK_BLUE);
+        values.put(DbHelper.COLOR, Utils.Colours._DARK_BLUE);
         values.put(DbHelper.TIME_STAMP, 0);
         long result = db.insert(DbHelper.TABLE_NAME, null, values);
         Log.i(TAG, "addItem :" + result);
@@ -59,7 +62,7 @@ public class DataAccess {
 
     public void updateItemBackGround(int id, int newcolor) {
         ContentValues values = new ContentValues();
-        values.put(DbHelper.COLOUR, newcolor);
+        values.put(DbHelper.COLOR, newcolor);
         db.update(DbHelper.TABLE_NAME, values, DbHelper.ID + " = " + id,
                 null);
     }
@@ -76,7 +79,7 @@ public class DataAccess {
 //        Cursor c = getItem(id + "");
 //        c.moveToFirst();
 //        values.put(DbHelper.CONTENT, c.getString(c.getColumnIndex(DbHelper.CONTENT)));
-//        values.put(DbHelper.COLOUR, c.getInt(c.getColumnIndex(DbHelper.COLOUR)));
+//        values.put(DbHelper.COLOR, c.getInt(c.getColumnIndex(DbHelper.COLOR)));
 //        values.put(DbHelper.TIME_STAMP, System.currentTimeMillis());
 //        db.insert(DbHelper.TABLE_NAME, null, values);
 //        removeItem(id);
@@ -129,6 +132,40 @@ public class DataAccess {
                 .query(DbHelper.TABLE_NAME, null, null, null, null, null, null);
 //        return db
 //                .query(DbHelper.TABLE_NAME, null, null, null, null, null, "done ,  time_stamp,  _id desc");
+    }
+
+    public ArrayList getAllItems() {
+        Cursor c = db.query(DbHelper.TABLE_NAME, null, null, null, null, null, null);
+        ArrayList<ToDoitem> list = new ArrayList();
+        for (int i = 0; i < c.getCount(); i++) {
+            c.moveToPosition(i);
+            ToDoitem item = new ToDoitem();
+            item.setColor(c.getInt(c.getColumnIndex(DbHelper.COLOR)));
+            item.setContent(c.getString(c.getColumnIndex(DbHelper.CONTENT)));
+            item.setId(c.getInt(c.getColumnIndex(DbHelper.ID)));
+            item.setTimeStamp(c.getInt(c.getColumnIndex(DbHelper.TIME_STAMP)));
+            item.setIsDone(c.getInt(c.getColumnIndex(DbHelper.DONE)));
+            list.add(item);
+        }
+        return list;
+    }
+
+    public ArrayList getAllIsDone(boolean is) {
+        int isDone = is ? DbHelper.ITEM_DONE : DbHelper.ITEM_NOT_DONE;
+        ArrayList<ToDoitem> list = new ArrayList();
+        Cursor c = db.query(DbHelper.TABLE_NAME, null, DbHelper.DONE
+                + " = " + isDone, null, null, null, null);
+        for (int i = 0; i < c.getCount(); i++) {
+            c.moveToPosition(i);
+            ToDoitem item = new ToDoitem();
+            item.setColor(c.getInt(c.getColumnIndex(DbHelper.COLOR)));
+            item.setContent(c.getString(c.getColumnIndex(DbHelper.CONTENT)));
+            item.setId(c.getInt(c.getColumnIndex(DbHelper.ID)));
+            item.setTimeStamp(c.getInt(c.getColumnIndex(DbHelper.TIME_STAMP)));
+            item.setIsDone(c.getInt(c.getColumnIndex(DbHelper.DONE)));
+            list.add(item);
+        }
+        return list;
     }
 
     public void clearDb() {

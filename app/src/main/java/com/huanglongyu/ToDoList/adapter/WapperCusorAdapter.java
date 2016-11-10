@@ -41,7 +41,6 @@ public abstract class WapperCusorAdapter extends CursorAdapter {
         swipeCenterView.setLayoutParams(lp);
 
         LinearLayout itemLayout = new LinearLayout(context);
-        itemLayout.setTag(R.id.TAG_HODLER_ID, swipeCenterView.getTag());
         itemLayout.setOrientation(LinearLayout.HORIZONTAL);
         itemLayout.setGravity(Gravity.CENTER_VERTICAL);
         itemLayout.setBackgroundColor(0xffffff);

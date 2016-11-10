@@ -2,11 +2,11 @@ package com.huanglongyu.ToDoList.util;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.util.Log;
 import android.view.View;
 
 import com.huanglongyu.ToDoList.R;
 import com.huanglongyu.ToDoList.adapter.TestCursorAdapter;
+import com.huanglongyu.ToDoList.bean.ToDoitem;
 import com.huanglongyu.ToDoList.database.DataAccess;
 import com.huanglongyu.ToDoList.database.DbHelper;
 
@@ -24,15 +24,43 @@ public class Utils {
         public static final int _DARK_BLUE = DARK_BLUE.ordinal();
     }
 
+    public static int updateCurrentBackgroundWithoutSave(Context context, View view, ToDoitem item) {
+        int isDone = item.getIsDone();
+        //this is ugly
+        if (isDone == DbHelper.ITEM_DONE){
+            view.setBackgroundColor(0xFF787878);
+            return ISDONE;
+        }
+        int oldColour = item.getColor();
+        Colours[] allColours = Colours.values ();
+        int newColour = (oldColour + 1) % allColours.length;
+        if (newColour == Colours._LIGHT_BLUE) {
+            view.setBackgroundColor(context.getResources().getColor(R.color.light_blue));
+        } else if (newColour == Colours._RED) {
+            view.setBackgroundColor(context.getResources().getColor(R.color.red));
+        } else if (newColour == Colours._ORANGE) {
+            view.setBackgroundColor(context.getResources().getColor(R.color.orange));
+        } else if (newColour == Colours._DARK_GREEN) {
+            view.setBackgroundColor(context.getResources().getColor(R.color.dark_green));
+        } else if (newColour == Colours._LIGHT_GREEN) {
+            view.setBackgroundColor(context.getResources().getColor(R.color.light_green));
+        } else if (newColour == Colours._DARK_BLUE){
+            view.setBackgroundColor(context.getResources().getColor(R.color.dark_blue));
+        }
+        return newColour;
+
+    }
+
+
     public static int updateCurrentBackgroundWithoutSave(Context context, View view, Cursor c) {
         int isDone = c.getInt(c.getColumnIndex(DbHelper.DONE));
         //this is ugly
-        if (isDone == 1){
+        if (isDone == DbHelper.ITEM_DONE){
             view.setBackgroundColor(0xFF787878);
             return ISDONE;
         }
         
-        int oldColour = c.getInt(c.getColumnIndex(DbHelper.COLOUR));
+        int oldColour = c.getInt(c.getColumnIndex(DbHelper.COLOR));
         Colours[] allColours = Colours.values ();
         int newColour = (oldColour + 1) % allColours.length;
         if (newColour == Colours._LIGHT_BLUE) {

@@ -1,5 +1,5 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item name="TAG_KEY_ID" type="id"/>
-    <item name="TAG_HODLER_ID" type="id"/>
+    <item name="TAG_VIEW_ID" type="id"/>
 </resources>

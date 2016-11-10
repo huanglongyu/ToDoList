@@ -10,37 +10,27 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout.LayoutParams;
-import android.widget.TextView;
-
 import com.huanglongyu.ToDoList.R;
+import com.huanglongyu.ToDoList.bean.ToDoitem;
+import com.huanglongyu.ToDoList.database.DataAccess;
+import com.huanglongyu.ToDoList.database.DbHelper;
+import com.huanglongyu.ToDoList.util.Utils;
 
 import java.util.ArrayList;
-import java.util.List;
-
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
-//use CursorAdapter instead of 
 
 public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListener{
 
 
     private LayoutInflater mInflater = null;
-    private List<String> data = new ArrayList<String>();
+    private DataAccess mDataAccess;
+    private ArrayList<ToDoitem> data;
     private static final String TAG = "ToDoListAdapter";
 
-    public ToDoListAdapter(Context context) {
+    public ToDoListAdapter(Context context, DataAccess acc) {
         super(context);
         this.mInflater = LayoutInflater.from(context);
-        data.add("And eternity in an hour0.");
-        data.add("And eternity in an hour1.");
-        data.add("And eternity in an hour2.");
-        data.add("And eternity in an hour3.");
-        data.add("And eternity in an hour4.");
-        data.add("And eternity in an hour5.");
-        data.add("And eternity in an hour6.");
-        data.add("And eternity in an hour7.");
-        data.add("And eternity in an hour8.");
-        data.add("And eternity in an hour9.");
-        data.add("And eternity in an hour10.");
+        mDataAccess = acc;
+        data = acc.getAllItems();
     }
 
     public void remove(int position) {
@@ -72,80 +62,59 @@ public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListen
     }
 
     @Override
-    public String getItem(int position) {
-//        return position;
+    public Object getItem(int position) {
         return data.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-//        Log.i("TestCursorAdapter", "getItemId:" + (position + 1000));
-//        return position + 1000;
         Log.i(TAG, "getItemId:" + position + " value:" + getItem(position).hashCode());
         return getItem(position).hashCode();
     }
 
     @Override
     public void swapItems(int positionOne, int positionTwo) {
-        String firstItem = data.set(positionOne, getItem(positionTwo));
+        ToDoitem firstItem = data.set(positionOne, (ToDoitem) getItem(positionTwo));
         notifyDataSetChanged();
         data.set(positionTwo, firstItem);
     }
 
-    //    @Override
-//    public View getView(int position, View convertView, ViewGroup parent) {
-//        ViewHolder holder = null;
-//        if (convertView == null) {
-//            holder = new ViewHolder();
-//            convertView = mInflater.inflate(R.layout.todo_list_item, null);
-//            holder.info = (TextView) convertView.findViewById(R.id.item_info);
-////            holder.view = convertView;
-//            holder.info.setOnTouchListener(this);
-//            convertView.setOnTouchListener(this);
-//            convertView.setTag(holder);
-//        } else {
-//            holder = (ViewHolder) convertView.getTag();
-//        }
-//        holder.info.setText((String) data.get(position));
-//        return convertView;
-//    }
-
     static class ViewHolder{
-        public TextView info;
-//        public View view;
+        public EditText editText;
     }
 
     @Override
-    protected View InflateItemView(View convertView, int position,
-            ViewGroup parent) {
-//        ViewHolder holder = new ViewHolder();
-//        View view = mInflater.inflate(R.layout.todo_list_item, null);
-//        holder.info = (TextView) view.findViewById(R.id.item_info);
-//        // holder.view = convertView;
-//        holder.info.setOnTouchListener(this);
-//        view.setOnTouchListener(this);
-//        view.setTag(holder);
-//        holder.info.setText((String) data.get(position));
-//        return view;
+    protected View InflateItemView(View convertView, int position, ViewGroup parent) {
         ViewHolder holder = new ViewHolder();
         View view = mInflater.inflate(R.layout.todo_list_item, null);
-        holder.info = (TextView) view.findViewById(R.id.item_info);
-        // holder.view = convertView;
-        holder.info.setOnTouchListener(this);
+        holder.editText = (EditText) view.findViewById(R.id.item_info);
+        holder.editText.setOnTouchListener(this);
+        holder.editText.setImeOptions(EditorInfo.IME_ACTION_SEND);
         view.setOnTouchListener(this);
         view.setTag(holder);
-        EditText et = (EditText) view.findViewById(R.id.item_info);
-        et.setOnTouchListener(this);
-        et.setImeOptions(EditorInfo.IME_ACTION_SEND);
-        holder.info.setText((String) data.get(position));
         return view;
     }
 
+    /**
+     * bind the inflated center view data
+     * @param object center view
+     * @param context
+     * @param position
+     */
     @Override
     protected void bindItemView(Object object, Context context, int position) {
-        if (object instanceof ViewHolder) {
-            ViewHolder holder = (ViewHolder) object;
-            holder.info.setText((String) data.get(position));
+        if (object instanceof View) {
+            View view = (View) object;
+            ViewHolder holder = (ViewHolder)view.getTag();
+            ToDoitem item = data.get(position);
+            holder.editText.setText(item.getContent());
+            Utils.updateCurrentBackgroundWithoutSave(context, view, item);
+            int isDone = item.getIsDone();
+            if (isDone == DbHelper.ITEM_DONE) {
+                holder.editText.getPaint().setStrikeThruText(true);
+            } else {
+                holder.editText.getPaint().setStrikeThruText(false);
+            }
         }
     }
 

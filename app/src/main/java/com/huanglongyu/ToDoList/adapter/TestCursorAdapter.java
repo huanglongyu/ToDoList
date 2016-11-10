@@ -80,7 +80,7 @@ public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouc
         String content = c.getString(c.getColumnIndex(DbHelper.CONTENT));
         int id = c.getInt(c.getColumnIndex(DbHelper.ID));
         int time = c.getInt(c.getColumnIndex(DbHelper.TIME_STAMP));
-        int color = c.getInt(c.getColumnIndex(DbHelper.COLOUR));
+        int color = c.getInt(c.getColumnIndex(DbHelper.COLOR));
         long hascode = content.hashCode();
         Log.i(TAG, "getItemId:" + hascode + " position:" + position + " content:" + content +
                 " id:" + id + " time:" + time + " color:" + color);
@@ -118,7 +118,7 @@ public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouc
         Utils.updateCurrentBackgroundWithoutSave(context, view.findViewWithTag(ITEM_VIEW_TAG), cursor);
         int isDone = cursor.getInt(cursor.getColumnIndex(DbHelper.DONE));
         Logger.i("bindView:" + cursor.getInt(cursor.getColumnIndex(DbHelper.ID)) + " isDone:" + isDone);
-        if (isDone == 1) {
+        if (isDone == DbHelper.ITEM_DONE) {
 //            et.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);
             et.getPaint().setStrikeThruText(true);
         } else {
@@ -189,7 +189,7 @@ public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouc
             ContentValues values = new ContentValues();
             values.put(DbHelper.DONE, c.getInt(c.getColumnIndex(DbHelper.DONE)));
 //            values.put(DbHelper.TIME_STAMP, c.getInt(c.getColumnIndex(DbHelper.TIME_STAMP)));
-            values.put(DbHelper.COLOUR, c.getInt(c.getColumnIndex(DbHelper.COLOUR)));
+            values.put(DbHelper.COLOR, c.getInt(c.getColumnIndex(DbHelper.COLOR)));
             values.put(DbHelper.CONTENT, c.getString(c.getColumnIndex(DbHelper.CONTENT)));
             return values;
         }

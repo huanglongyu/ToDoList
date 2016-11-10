@@ -894,7 +894,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
             toColor = 0xFF787878;
         } else {
             fromColor = 0xFF787878;
-            toColor = c.getInt(c.getColumnIndex(DbHelper.COLOUR));
+            toColor = c.getInt(c.getColumnIndex(DbHelper.COLOR));
         }
         
         ValueAnimator animatorColor = ValueAnimator.ofObject(new ArgbEvaluator(), fromColor, toColor).setDuration(DONE_ANIMATION_TIME);

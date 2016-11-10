@@ -14,7 +14,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public static final String ID = "_id";
     public static final String CONTENT = "content";
-    public static final String COLOUR = "colour";
+    public static final String COLOR = "color";
     public static final String DONE = "done";
     public static final String TIME_STAMP = "time_stamp";
 
@@ -25,31 +25,31 @@ public class DbHelper extends SQLiteOpenHelper {
                     "create table " + TABLE_NAME
                     + " (" + "_id integer primary key autoincrement, "
                     + CONTENT + " text not null, "
-                    + COLOUR +  " integer not null, "
+                    + COLOR +  " integer not null, "
                     + TIME_STAMP +  " integer not null, "
                     + DONE   + " integer not null);";
 
     private String[] statements = {
-            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test1', '7', '0', '1');",
-            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test2', '7', '1', '2');",
-            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test3', '7', '0', '3');",
-            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test4', '7', '1', '4');",
-            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test5', '7', '0', '5');",
-            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test6', '7', '0', '6');"
-//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test7', '0', '0');",
-//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test8', '0', '0');",
-//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test9', '0', '0');",
-//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test10', '0', '0');",
-//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test11', '0', '0');",
-//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test12', '0', '0');",
-//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test13', '0', '0');",
-//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test14', '0', '0');",
-//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test15', '0', '0');",
-//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test16', '0', '0');",
-//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test17', '0', '0');",
-//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test18', '0', '0');",
-//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test19', '0', '0');",
-//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOUR + "," +  DONE + ") VALUES (NULL, 'test20', '0', '0');"
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test1', '7', '0', '1');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test2', '7', '0', '2');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test3', '7', '0', '3');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test4', '7', '0', '4');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test5', '7', '1', '5');",
+            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + "," + TIME_STAMP +") VALUES (NULL, 'test6', '7', '1', '6');"
+//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + ") VALUES (NULL, 'test7', '0', '0');",
+//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + ") VALUES (NULL, 'test8', '0', '0');",
+//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + ") VALUES (NULL, 'test9', '0', '0');",
+//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + ") VALUES (NULL, 'test10', '0', '0');",
+//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + ") VALUES (NULL, 'test11', '0', '0');",
+//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + ") VALUES (NULL, 'test12', '0', '0');",
+//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + ") VALUES (NULL, 'test13', '0', '0');",
+//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + ") VALUES (NULL, 'test14', '0', '0');",
+//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + ") VALUES (NULL, 'test15', '0', '0');",
+//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + ") VALUES (NULL, 'test16', '0', '0');",
+//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + ") VALUES (NULL, 'test17', '0', '0');",
+//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + ") VALUES (NULL, 'test18', '0', '0');",
+//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + ") VALUES (NULL, 'test19', '0', '0');",
+//            "INSERT INTO " + TABLE_NAME + "(_id," +  CONTENT + "," + COLOR + "," +  DONE + ") VALUES (NULL, 'test20', '0', '0');"
     };
 
     public static synchronized DbHelper getInstance(Context context) {

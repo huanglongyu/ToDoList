@@ -35,7 +35,7 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
 
     private DataAccess mDataAccess;
     private TestCursorAdapter mTestCursorAdapter;
-    private static final boolean USE_CURSOR = true;
+    private static final boolean USE_CURSOR = false;
     private static final String TAG = "MainActivity";
     
     @Override
@@ -52,7 +52,6 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
 
         mToDoListView = (ToDoListView) findViewById(R.id.listview);
 //        mToDoListView.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
-        mToDoListAdapter = new ToDoListAdapter(this);
         mToDoListView.setOnItemClickListener(this);
         mToDoListView.setOnToDoListViewTriggerListener(this);
         mToDoListView.setOnItemLongClickListener(this);
@@ -63,11 +62,13 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
         mDataAccess = new DataAccess(this);
         mDataAccess.openDb();
 //        mDataAccess.clearDb();
-        mTestCursorAdapter = new TestCursorAdapter(this, mDataAccess);
-        mTestCursorAdapter.setDataObserverListener(this);
+
         if (USE_CURSOR) {
+            mTestCursorAdapter = new TestCursorAdapter(this, mDataAccess);
+            mTestCursorAdapter.setDataObserverListener(this);
             mToDoListView.setAdapter(mTestCursorAdapter);
         } else {
+            mToDoListAdapter = new ToDoListAdapter(this, mDataAccess);
             mToDoListView.setAdapter(mToDoListAdapter);
         }
     }

@@ -2,6 +2,7 @@ package com.huanglongyu.ToDoList.adapter;
 
 import android.content.Context;
 import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -22,42 +23,52 @@ public abstract class WapperAdapter extends BaseAdapter{
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             convertView = InflateContent(convertView, position, parent);
-//            convertView = InflateItemView(convertView, position, parent);
-        } else {
-            bindItemView(convertView.getTag(R.id.TAG_HODLER_ID), mContext, position);
         }
+        bindItemView(convertView.getTag(R.id.TAG_VIEW_ID), mContext, position);
         return convertView;
     }
     
     private View InflateContent(View convertView, int position, ViewGroup parent) {
-        View itemContent = InflateItemView(convertView, position, parent);
-        if (itemContent == null) {
+        View swipeCenterView = InflateItemView(convertView, position, parent);
+        if (swipeCenterView == null) {
             throw new IllegalStateException("the itemView can't be null!");
         }
+
+        int margin = mContext.getResources().getDimensionPixelSize(R.dimen.todo_item_extra_margin);
+
+        //first. set user's layout be full of screen
         DisplayMetrics dm = mContext.getResources().getDisplayMetrics();
-        int w_screen = dm.widthPixels;
+        int w_screen = dm.widthPixels - margin * 2;
         LayoutParams lp = new LayoutParams(w_screen, ViewGroup.LayoutParams.WRAP_CONTENT);
-        itemContent.setLayoutParams(lp);
-        // itemLayout indicates the outermost layout of the new view.
+        swipeCenterView.setLayoutParams(lp);
+
+
         LinearLayout itemLayout = new LinearLayout(mContext);
-        itemLayout.setTag(R.id.TAG_HODLER_ID, itemContent.getTag());
+        itemLayout.setTag(R.id.TAG_VIEW_ID, swipeCenterView);
         itemLayout.setOrientation(LinearLayout.HORIZONTAL);
-//        itemLayout.setLayoutParams(new AbsListView.LayoutParams(
-//                itemContent.getLayoutParams().width, itemContent.getLayoutParams().height));
-//        itemLayout.addView(itemContent);
-        
+        itemLayout.setGravity(Gravity.CENTER_VERTICAL);
+        itemLayout.setBackgroundColor(0xffffff);
+
+        //second. add left view
         View swipeLeftView = InflateLeftView(mContext, position, parent);
         if (swipeLeftView != null) {
             LayoutParams cookLp = (LayoutParams) swipeLeftView.getLayoutParams();
-            cookLp.setMarginStart(-cookLp.width);
+            cookLp.leftMargin = -cookLp.width;
+            cookLp.rightMargin = margin;
             swipeLeftView.setLayoutParams(cookLp);
             swipeLeftView.setTag(ToDoListView.ITEM_CONTENT_LEFT_TAG);
             itemLayout.addView(swipeLeftView);
         }
-        itemLayout.addView(itemContent);
 
+        //third. add middle view
+        itemLayout.addView(swipeCenterView);
+
+        //four. add right view
         View swipeRightView = InflateRightView(mContext, position, parent);
         if (swipeRightView != null) {
+            LayoutParams cookRp = (LayoutParams) swipeRightView.getLayoutParams();
+            cookRp.leftMargin = margin;
+            swipeRightView.setLayoutParams(cookRp);
             swipeRightView.setTag(ToDoListView.ITEM_CONTENT_RIGHT_TAG);
             itemLayout.addView(swipeRightView);
         }

@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 
 import com.huanglongyu.ToDoList.adapter.TestCursorAdapter;
 import com.huanglongyu.ToDoList.adapter.ToDoListAdapter;
+import com.huanglongyu.ToDoList.bean.ToDoitem;
 import com.huanglongyu.ToDoList.database.DataAccess;
 import com.huanglongyu.ToDoList.database.DbHelper;
 import com.huanglongyu.ToDoList.util.Logger;
@@ -35,7 +36,7 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
 
     private DataAccess mDataAccess;
     private TestCursorAdapter mTestCursorAdapter;
-    private static final boolean USE_CURSOR = false;
+    public static final boolean USE_CURSOR = false;
     private static final String TAG = "MainActivity";
     
     @Override
@@ -137,8 +138,13 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
     }
 
     private void listDataChanged() {
-        //this is bad choice, need to optimize!
-        mTestCursorAdapter.swapCursor(mDataAccess.getAll());
+        if (USE_CURSOR) {
+            //this is bad choice, need to optimize!
+            mTestCursorAdapter.swapCursor(mDataAccess.getAll());
+        } else {
+            mToDoListAdapter.notifyDataSetChanged();
+        }
+
     }
 
     @Override
@@ -172,7 +178,21 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
             }
             mDataAccess.updateItemIsDone(c.getInt(c.getColumnIndex(DbHelper.ID)), newValue);
             listDataChanged();
+        } else {
+            ToDoitem item = (ToDoitem)mToDoListAdapter.getItem(donePosition);
+            int oldValue = item.getIsDone();
+            int newValue;
+            if (oldValue == DbHelper.ITEM_DONE) {
+                newValue = DbHelper.ITEM_NOT_DONE;
+            } else {
+                newValue = DbHelper.ITEM_DONE;
+            }
+            item.setIsDone(newValue);
+            mDataAccess.updateItemIsDone(item.getId(), newValue);
+            mToDoListAdapter.updateItem(donePosition, item);
         }
+
+
     }
 
     @Override

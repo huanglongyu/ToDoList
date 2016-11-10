@@ -79,6 +79,11 @@ public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListen
         data.set(positionTwo, firstItem);
     }
 
+    public void updateItem(int position, ToDoitem item) {
+        data.set(position, item);
+        notifyDataSetChanged();
+    }
+
     static class ViewHolder{
         public EditText editText;
     }

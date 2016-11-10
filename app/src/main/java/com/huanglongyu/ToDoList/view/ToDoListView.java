@@ -36,9 +36,11 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Scroller;
 
+import com.huanglongyu.ToDoList.MainActivity;
 import com.huanglongyu.ToDoList.R;
 import com.huanglongyu.ToDoList.adapter.TestCursorAdapter;
 import com.huanglongyu.ToDoList.adapter.ToDoListAdapter;
+import com.huanglongyu.ToDoList.bean.ToDoitem;
 import com.huanglongyu.ToDoList.database.DbHelper;
 import com.huanglongyu.ToDoList.util.Logger;
 
@@ -875,6 +877,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         }
     }
 
+    //FIXME: toColor
     private void performDone(final View doneView, final int donePosition) {
 //        Logger.i("doneView :" + doneView.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG));
         ValueAnimator animator = ValueAnimator.ofFloat(0.2f, 1).setDuration(DONE_ANIMATION_TIME);
@@ -886,25 +889,43 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                 doneView.setAlpha(alpha);
             }
         });
-        Cursor c = (Cursor)getAdapter().getItem(donePosition);
-        int isDone = c.getInt(c.getColumnIndex(DbHelper.DONE));
         int fromColor , toColor;
-        if (isDone == 1) {
-            fromColor = 0xFFDCDCDC;
-            toColor = 0xFF787878;
+        if (MainActivity.USE_CURSOR) {
+            Cursor c = (Cursor)getAdapter().getItem(donePosition);
+            int isDone = c.getInt(c.getColumnIndex(DbHelper.DONE));
+            if (isDone == DbHelper.ITEM_DONE) {
+                fromColor = 0xFFDCDCDC;
+                toColor = 0xFF787878;
+            } else {
+                fromColor = 0xFF787878;
+                toColor = c.getInt(c.getColumnIndex(DbHelper.COLOR));
+            }
         } else {
-            fromColor = 0xFF787878;
-            toColor = c.getInt(c.getColumnIndex(DbHelper.COLOR));
+            ToDoitem item = (ToDoitem)getAdapter().getItem(donePosition);
+            int isDone = item.getIsDone();
+            if (isDone == DbHelper.ITEM_DONE) {
+                fromColor = 0xFFDCDCDC;
+                toColor = 0xFF787878;
+            } else {
+                fromColor = 0xFF787878;
+                toColor = item.getColor();
+            }
         }
-        
+
         ValueAnimator animatorColor = ValueAnimator.ofObject(new ArgbEvaluator(), fromColor, toColor).setDuration(DONE_ANIMATION_TIME);
         animatorColor.addUpdateListener(new ValueAnimator.AnimatorUpdateListener(){
 
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 int color = (Integer)valueAnimator.getAnimatedValue();
-                View content = doneView.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG);
+                View content;
+                if (MainActivity.USE_CURSOR) {
+                    content = doneView.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG);
+                } else {
+                    content = (View)doneView.getTag(R.id.TAG_VIEW_ID);
+                }
                 content.setBackgroundColor(color);
+
         }});
 
         animator.addListener(new AnimatorListenerAdapter() {

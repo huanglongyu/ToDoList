@@ -10,6 +10,7 @@ import com.huanglongyu.ToDoList.bean.ToDoitem;
 import com.huanglongyu.ToDoList.util.Utils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class DataAccess {
 
@@ -58,6 +59,17 @@ public class DataAccess {
         values.put(DbHelper.CONTENT, newcontent);
         db.update(DbHelper.TABLE_NAME, values, DbHelper.ID + " = " + id,
                 null);
+    }
+
+    public void updateSubItems(List list, int fromPosition, int toPosition) {
+        Cursor c = getAll();
+        for (int i = fromPosition, j = 0; i <= toPosition; i++, j++) {
+            c.moveToPosition(i);
+            int id = c.getInt(c.getColumnIndex(DbHelper.ID));
+            ToDoitem item = (ToDoitem)list.get(j);
+            ContentValues values = Utils.transformToContentValues(item);
+            updateItemAll(id, values);
+        }
     }
 
     public void updateItemBackGround(int id, int newcolor) {

@@ -1,5 +1,6 @@
 package com.huanglongyu.ToDoList.util;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.view.View;
@@ -22,6 +23,15 @@ public class Utils {
         public static final int _DARK_GREEN = DARK_GREEN.ordinal();
         public static final int _LIGHT_GREEN = LIGHT_GREEN.ordinal();
         public static final int _DARK_BLUE = DARK_BLUE.ordinal();
+    }
+
+    public static ContentValues transformToContentValues(ToDoitem item) {
+        ContentValues values = new ContentValues();
+        values.put(DbHelper.CONTENT, item.getContent());
+        values.put(DbHelper.TIME_STAMP, item.getTimeStamp());
+        values.put(DbHelper.DONE, item.getIsDone());
+        values.put(DbHelper.COLOR, item.getColor());
+        return values;
     }
 
     public static int updateCurrentBackgroundWithoutSave(Context context, View view, ToDoitem item) {

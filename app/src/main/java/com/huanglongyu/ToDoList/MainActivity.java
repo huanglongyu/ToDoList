@@ -21,13 +21,18 @@ import com.huanglongyu.ToDoList.bean.ToDoitem;
 import com.huanglongyu.ToDoList.database.DataAccess;
 import com.huanglongyu.ToDoList.database.DbHelper;
 import com.huanglongyu.ToDoList.util.Logger;
+import com.huanglongyu.ToDoList.util.ThreadUtil;
 import com.huanglongyu.ToDoList.util.Utils;
+import com.huanglongyu.ToDoList.view.OnItemMovedListener;
 import com.huanglongyu.ToDoList.view.PreImeRelativeLayout;
 import com.huanglongyu.ToDoList.view.ToDoListView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class MainActivity extends Activity implements OnItemClickListener, ToDoListView.OnToDoListViewTriggerListener,
-        DataAccess.DataObserverListener, View.OnClickListener, AdapterView.OnItemLongClickListener {
+        DataAccess.DataObserverListener, View.OnClickListener, AdapterView.OnItemLongClickListener, OnItemMovedListener {
 
     private ToDoListView mToDoListView;
     private ToDoListAdapter mToDoListAdapter;
@@ -56,6 +61,7 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
         mToDoListView.setOnItemClickListener(this);
         mToDoListView.setOnToDoListViewTriggerListener(this);
         mToDoListView.setOnItemLongClickListener(this);
+        mToDoListView.setOnItemMovedListener(this);
 
         mPreImeRelativeLayout = (PreImeRelativeLayout)findViewById(R.id.parent);
         mPreImeRelativeLayout.setToDoListView(mToDoListView);
@@ -99,6 +105,24 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
         params.height = h ;
         params.topMargin = height + view.getHeight();
         dimView.setLayoutParams(params);
+    }
+
+    @Override
+    public void onItemMoved(final int originalPosition, final int newPosition) {
+        final List list = mToDoListAdapter.getSubData(originalPosition, newPosition);
+        Log.i(TAG, "onItemMoved originalPosition:" + originalPosition + " newPosition:" + newPosition +
+                " size:" + list.size());
+//        for (int i = 0; i < list.size(); i++) {
+//            ToDoitem item = (ToDoitem)list.get(i);
+//            Log.i(TAG, "MoveItem:" + item.getContent());
+//        }
+
+        ThreadUtil.runOnBackground(new Runnable() {
+            @Override
+            public void run() {
+                mDataAccess.updateSubItems(list, originalPosition, newPosition);
+            }
+        });
     }
 
     @Override

@@ -14,6 +14,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -92,6 +93,8 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     private Adapter mAdapter;
     private SwitchViewAnimator mSwitchViewAnimator;
     private boolean mIsSettlingHoverDrawable;
+    private OnItemMovedListener mOnItemMovedListener;
+
     /**
      * The default scroll amount in pixels.
      */
@@ -124,6 +127,10 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
 //    public void setLeftContent(View leftView) {
 //        this.leftView = leftView; 
 //    }
+
+    public void setOnItemMovedListener(OnItemMovedListener onItemMovedListener) {
+        mOnItemMovedListener = onItemMovedListener;
+    }
 
     public void setHeaderFocus(boolean focus){
         mHeaderView.setFocus(focus);
@@ -593,10 +600,10 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         valueAnimator.addListener(listener);
         valueAnimator.start();
 
-//        int newPosition = getPositionForId(mMobileItemId) - getHeaderViewsCount();
-//        if (mOriginalMobileItemPosition != newPosition && mOnItemMovedListener != null) {
-//            mOnItemMovedListener.onItemMoved(mOriginalMobileItemPosition, newPosition);
-//        }
+        int newPosition = getPositionForId(mMobileItemId);
+        if (mOriginalMobileItemPosition != newPosition && mOnItemMovedListener != null) {
+            mOnItemMovedListener.onItemMoved(mOriginalMobileItemPosition, newPosition);
+        }
         return true;
     }
 

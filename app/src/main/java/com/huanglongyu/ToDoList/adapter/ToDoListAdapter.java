@@ -17,6 +17,7 @@ import com.huanglongyu.ToDoList.database.DbHelper;
 import com.huanglongyu.ToDoList.util.Utils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListener{
 
@@ -83,6 +84,10 @@ public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListen
     public void updateItem(int position, ToDoitem item) {
         data.set(position, item);
         notifyDataSetChanged();
+    }
+
+    public List getSubData(int from, int to) {
+        return data.subList(from, to + 1);
     }
 
     static class ViewHolder{

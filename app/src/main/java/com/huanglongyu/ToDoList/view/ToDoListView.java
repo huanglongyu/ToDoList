@@ -65,6 +65,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     private View itemView;
 //    private View rightView, leftView;
     private int mTouchSlop;
+    private boolean isDown;
     private boolean isSlide;
     private boolean pendingSlide = false;
     private boolean pendingDismiss = false;
@@ -79,6 +80,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     private int velocityX;
     private int screenWidth;
     private int itemMarin;
+    private Context mContext;
     private ArrayList<PendingDismissData> mPendingDismisses = new ArrayList<PendingDismissData>();
     private ArrayList<PendingDoneData> mPendingDone = new ArrayList<PendingDoneData>();
 
@@ -89,7 +91,6 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     private int mOriginalMobileItemPosition = AdapterView.INVALID_POSITION;
     private HoverDrawable mHoverDrawable;
     private boolean isDrag = false;
-    private float mDragDownX, mDragDownY;
     private Adapter mAdapter;
     private SwitchViewAnimator mSwitchViewAnimator;
     private OnItemMovedListener mOnItemMovedListener;
@@ -196,6 +197,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     }
 
     private void initWithContext(Context context) {
+        mContext = context;
         mScroller = new Scroller(context, new DecelerateInterpolator());
         // XListView need the scroll event, and it will dispatch the event to
         // user's listener (as a proxy).
@@ -361,6 +363,10 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     }
 
     public void startDragging(int position) {
+        if (isSlide) {
+            return;
+        }
+
         position = position - getHeaderViewsCount();
         if (mMobileItemId != AdapterView.INVALID_POSITION) {
             /* We are already dragging */
@@ -454,7 +460,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                 ? mAdapter.getItemId(listDatePosition + 1)
                 : AdapterView.INVALID_POSITION;
 
-        Log.i(TAG, "listDatePosition:" + listDatePosition + " aboveItemId:" + aboveItemId + " belowItemId:" + belowItemId);
+//        Log.i(TAG, "listDatePosition:" + listDatePosition + " aboveItemId:" + aboveItemId + " belowItemId:" + belowItemId);
 
         final long switchId = mHoverDrawable.isMovingUpwards() ? aboveItemId : belowItemId;
         View switchView = getViewForId(switchId);
@@ -529,6 +535,10 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                     || (Math.abs(ev.getRawX() - mDownX) > mTouchSlop && Math.abs(ev
                     .getRawY() - mDownY) < mTouchSlop)) {
                 isSlide = true;
+                setOnItemLongClickListener(null);
+            } else if (Math.abs(ev
+                    .getRawY() - mDownY) > mTouchSlop) {
+                isDown = true;
             }
             break;
         }
@@ -701,110 +711,114 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                     scrollByDistanceX();
                 }
                 isSlide = false;
+                setOnItemLongClickListener((MainActivity)mContext);
                 recycleVelocityTracker();
                 break;
             }
             return true;
         }
-        switch (ev.getAction()) {
-        case MotionEvent.ACTION_DOWN:
+        if (isDown) {
+            switch (ev.getAction()) {
+                case MotionEvent.ACTION_DOWN:
 //            mScroller.abortAnimation();
-            mLastY = ev.getRawY();
-            mDownY = ev.getRawY();
+                    mLastY = ev.getRawY();
+                    mDownY = ev.getRawY();
 
-            isTouchingScreen = true;
-            limitToScroll = false;
-            break;
-        case MotionEvent.ACTION_MOVE:
-            final float deltaY = ev.getRawY() - mLastY;
-            mLastY = ev.getRawY();
-            // Logger.i("longyu","getFirstVisiblePosition:" +
-            // getFirstVisiblePosition() + " deltaY:" + deltaY +
-            // " getVisiableHeight():" + mHeaderView.getVisiableHeight());
+                    isTouchingScreen = true;
+                    limitToScroll = false;
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    final float deltaY = ev.getRawY() - mLastY;
+                    mLastY = ev.getRawY();
+                    // Logger.i("longyu","getFirstVisiblePosition:" +
+                    // getFirstVisiblePosition() + " deltaY:" + deltaY +
+                    // " getVisiableHeight():" + mHeaderView.getVisiableHeight());
 //            Logger.i("mHeaderView.getBottom():" + mHeaderView.getBottom() + " getTop:" + mHeaderView.getTop());
 
-            if (getFirstVisiblePosition() == 0
-                    && (mHeaderView.getVisiableHeight() > 0 || deltaY > 0)) {
-                // the first item is showing, header has shown or pull down.
-                // updateHeaderHeight(deltaY / OFFSET_RADIO);
-                limitToScroll = true;
-                updateHeaderHeight(deltaY);
+                    if (getFirstVisiblePosition() == 0
+                            && (mHeaderView.getVisiableHeight() > 0 || deltaY > 0)) {
+                        // the first item is showing, header has shown or pull down.
+                        // updateHeaderHeight(deltaY / OFFSET_RADIO);
+                        limitToScroll = true;
+                        updateHeaderHeight(deltaY);
 //                Logger.i("updateHeaderHeight");
-            }else if((deltaY < 0 || mHeaderView.getVisiableHeight() <=0) && limitToScroll){
+                    }else if((deltaY < 0 || mHeaderView.getVisiableHeight() <=0) && limitToScroll){
 //                Logger.i("ACTION_MOVE return true, limitToScroll:" + limitToScroll);
 //                return true;
-            }else{
+                    }else{
 //                Logger.i("else ACTION_MOVE, deltaY:" + deltaY + " mHeaderView.getVisiableHeight():" + mHeaderView.getVisiableHeight());
-            }
+                    }
 //            else if(getFirstVisiblePosition() != 0){
 //                mHeaderView.setShowHeight(0);
 //            }
-            break;
-        case MotionEvent.ACTION_UP:
-            limitToScroll = false;
-            int height = mHeaderView.getVisiableHeight();
-            if (height == 0) {
-            // not visible.
-                break;
-            }
+                    break;
+                case MotionEvent.ACTION_UP:
+                    limitToScroll = false;
+                    isDown = false;
+                    int height = mHeaderView.getVisiableHeight();
+                    if (height == 0) {
+                        // not visible.
+                        break;
+                    }
 //            float movedY = (ev.getRawY() - mDownY) * 0.9f;
-            if(mHeaderView.getBottom() > itemMaxHeight/2){
+                    if(mHeaderView.getBottom() > itemMaxHeight/2){
 //                int offset = itemMaxHeight - mHeaderView.getBottom();
-                int offset = itemMaxHeight - mHeaderView.getHeight();
+                        int offset = itemMaxHeight - mHeaderView.getHeight();
 //                Log.i(TAG, "ACTION_UP  down!!!!!!!!height:" + height + " " + " offset:" + offset + " getTop:" + mHeaderView.getTop() + " getBottom:" +  mHeaderView.getBottom()
 //                        + " getFirstVisiblePosition:" + getFirstVisiblePosition() + " itemMaxHeight:" + itemMaxHeight);
-                if(getFirstVisiblePosition() !=0){
+                        if(getFirstVisiblePosition() !=0){
 //                    Logger.i("up!!!!!!!! setShowHeight 0," + getFirstVisiblePosition());
-                    mHeaderView.setShowHeight(0);
-                    this.invalidate();
-                    break;
-                }
-                if(offset != 0){
+                            mHeaderView.setShowHeight(0);
+                            this.invalidate();
+                            break;
+                        }
+                        if(offset != 0){
 //                    Log.i(TAG, "ACTION_UP down!!!!!!!! startScroll 1, needToMovedY:" + mHeaderView.getBottom());
-                    mScroller.startScroll(0, height, 0, offset, SLID_ANIMATION_TIME);
-                    this.invalidate();
-                } else if (offset == 0){
-                    if(mOnToDoListViewTriggerListener != null){
-                        mOnToDoListViewTriggerListener.onDownTriggered();
-                    }
-                }
-            }else{
+                            mScroller.startScroll(0, height, 0, offset, SLID_ANIMATION_TIME);
+                            this.invalidate();
+                        } else if (offset == 0){
+                            if(mOnToDoListViewTriggerListener != null){
+                                mOnToDoListViewTriggerListener.onDownTriggered();
+                            }
+                        }
+                    }else{
 //                int offset = mHeaderView.getBottom();
-                int offset = mHeaderView.getHeight();
-                Logger.i("ACTION_UP  up!!!!!!!!height:" + height + " " + " offset:" + offset + " getTop:" + mHeaderView.getTop() + " getBottom:" +  mHeaderView.getBottom()
-                        + " getFirstVisiblePosition:" + getFirstVisiblePosition() + " itemMaxHeight:" + itemMaxHeight);
-                if(getFirstVisiblePosition() !=0){
+                        int offset = mHeaderView.getHeight();
+                        Logger.i("ACTION_UP  up!!!!!!!!height:" + height + " " + " offset:" + offset + " getTop:" + mHeaderView.getTop() + " getBottom:" +  mHeaderView.getBottom()
+                                + " getFirstVisiblePosition:" + getFirstVisiblePosition() + " itemMaxHeight:" + itemMaxHeight);
+                        if(getFirstVisiblePosition() !=0){
 //                    Logger.i("up!!!!!!!! setShowHeight 0," + getFirstVisiblePosition());
-                    mHeaderView.setShowHeight(0);
-                    this.invalidate();
+                            mHeaderView.setShowHeight(0);
+                            this.invalidate();
+                            break;
+                        }
+                        if(offset != 0){
+                            Logger.i("ACTION_UP up!!!!!!!! startScroll 2, needToMovedY:" + mHeaderView.getBottom() + " offset:" + offset);
+                            mScroller.startScroll(0, height, 0, -offset, SLID_ANIMATION_TIME);
+                            this.invalidate();
+                        }
+                    }
                     break;
-                }
-                if(offset != 0){
-                    Logger.i("ACTION_UP up!!!!!!!! startScroll 2, needToMovedY:" + mHeaderView.getBottom() + " offset:" + offset);
-                    mScroller.startScroll(0, height, 0, -offset, SLID_ANIMATION_TIME);
-                    this.invalidate();
-                }
+                default:
+                    Logger.i("default");
+                    // mLastY = -1; // reset
+                    // isTouchingScreen = false;
+                    // // TODO
+                    // //
+                    // 存在bug：当两个if的条件都满足的时候，只能滚动一个，所以在reSetHeader的时候就不起作用了，一般就只会reSetFooter
+                    // if (getFirstVisiblePosition() == 0) {
+                    // resetHeaderHeight();
+                    // }
+                    // if (getLastVisiblePosition() == mTotalItemCount - 1) {
+                    // // invoke load more.
+                    // if (mEnablePullLoad
+                    // && mFooterView.getBottomMargin() > PULL_LOAD_MORE_DELTA) {
+                    // startLoadMore();
+                    // }
+                    // resetFooterHeight();
+                    // }
+                    break;
             }
-            break;
-        default:
-            Logger.i("default");
-            // mLastY = -1; // reset
-            // isTouchingScreen = false;
-            // // TODO
-            // //
-            // 存在bug：当两个if的条件都满足的时候，只能滚动一个，所以在reSetHeader的时候就不起作用了，一般就只会reSetFooter
-            // if (getFirstVisiblePosition() == 0) {
-            // resetHeaderHeight();
-            // }
-            // if (getLastVisiblePosition() == mTotalItemCount - 1) {
-            // // invoke load more.
-            // if (mEnablePullLoad
-            // && mFooterView.getBottomMargin() > PULL_LOAD_MORE_DELTA) {
-            // startLoadMore();
-            // }
-            // resetFooterHeight();
-            // }
-            break;
         }
         return super.onTouchEvent(ev);
     }

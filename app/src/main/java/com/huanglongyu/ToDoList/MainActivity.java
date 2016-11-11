@@ -108,10 +108,13 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
     }
 
     @Override
-    public void onItemMoved(final int originalPosition, final int newPosition) {
-        final List list = mToDoListAdapter.getSubData(originalPosition, newPosition);
-        Log.i(TAG, "onItemMoved originalPosition:" + originalPosition + " newPosition:" + newPosition +
-                " size:" + list.size());
+    public void onItemMoved(int originalPosition, int newPosition) {
+        final int from = originalPosition < newPosition ? originalPosition : newPosition;
+        final int to = originalPosition < newPosition ? newPosition : originalPosition;
+        Log.i(TAG, "from:" + from + " to:" + to);
+        final List list = mToDoListAdapter.getSubData(from, to);
+//        Log.i(TAG, "onItemMoved originalPosition:" + originalPosition + " newPosition:" + newPosition +
+//                " size:" + list.size());
 //        for (int i = 0; i < list.size(); i++) {
 //            ToDoitem item = (ToDoitem)list.get(i);
 //            Log.i(TAG, "MoveItem:" + item.getContent());
@@ -120,7 +123,7 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
         ThreadUtil.runOnBackground(new Runnable() {
             @Override
             public void run() {
-                mDataAccess.updateSubItems(list, originalPosition, newPosition);
+                mDataAccess.updateSubItems(list, from, to);
             }
         });
     }

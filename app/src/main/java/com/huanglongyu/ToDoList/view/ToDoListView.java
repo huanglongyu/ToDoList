@@ -289,9 +289,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
 
                 assert dragItemView != null;
                 dragItemView.setVisibility(View.VISIBLE);
-                Log.i(TAG, "onPreDraw1 mMobileItemId:" + mMobileItemId + " " + dragItemView);
                 dragItemView = getViewForId(mMobileItemId);
-                Log.i(TAG, "onPreDraw2 " + dragItemView);
                 assert dragItemView != null;
                 dragItemView.setVisibility(View.INVISIBLE);
                 return true;
@@ -328,11 +326,8 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
 
                 View switchView = getViewForId(mSwitchId);
                 if (switchView != null) {
-                    Log.i(TAG, "onPreDraw :" + mTranslationY);
                     switchView.setTranslationY(mTranslationY);
                     switchView.animate().translationY(0).start();
-                } else {
-                    Log.i(TAG, "switchView = null");
                 }
 
                 mPreviousMobileView.setVisibility(View.VISIBLE);
@@ -1063,7 +1058,6 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
             float y = dragItemView.getY();
             mHoverDrawable.onScroll(y);
         }
-        Log.i(TAG, "onScroll : " + mIsSettlingHoverDrawable);
 
         if (!mIsSettlingHoverDrawable) {
             checkAndHandleFirstVisibleCellChange();

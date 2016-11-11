@@ -92,8 +92,31 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     private float mDragDownX, mDragDownY;
     private Adapter mAdapter;
     private SwitchViewAnimator mSwitchViewAnimator;
-    private boolean mIsSettlingHoverDrawable;
     private OnItemMovedListener mOnItemMovedListener;
+    /**
+     * Specifies whether or not the hover drawable is currently being animated as result of an up / cancel event.
+     */
+    private boolean mIsSettlingHoverDrawable;
+
+    /**
+     * The previous first visible item before checking if we should switch.
+     */
+    private int mPreviousFirstVisibleItem = -1;
+
+    /**
+     * The previous last visible item before checking if we should switch.
+     */
+    private int mPreviousLastVisibleItem = -1;
+
+    /**
+     * The current first visible item.
+     */
+    private int mCurrentFirstVisibleItem;
+
+    /**
+     * The current last visible item.
+     */
+    private int mCurrentLastVisibleItem;
 
     /**
      * The default scroll amount in pixels.
@@ -588,6 +611,16 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         }
     }
 
+    private boolean handleDownEvent(@NonNull final MotionEvent event) {
+        mDownX = event.getRawX();
+        mDownY = event.getRawY();
+        return true;
+    }
+
+    private boolean handleCancelEvent() {
+        return handleUpEvent();
+    }
+
     private boolean handleUpEvent() {
         if (dragItemView == null) {
             return false;
@@ -607,6 +640,18 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         return true;
     }
 
+    private boolean handleMoveEvent(@NonNull final MotionEvent event) {
+        boolean handled = false;
+        if (mHoverDrawable != null) {
+            mHoverDrawable.handleMoveEvent(event);
+            switchIfNecessary();
+            invalidate();
+            handled = true;
+        }
+
+        return handled;
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         mLastMotionEventY = ev.getY();
@@ -619,27 +664,19 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
             switch (ev.getAction() & MotionEvent.ACTION_MASK) {
                 case MotionEvent.ACTION_DOWN:
                     mLastMotionEventY = ev.getY();
-                    mDragDownX = ev.getRawX();
-                    mDragDownY = ev.getRawY();
-                    handled = true;
+                    handled = handleDownEvent(ev);
                     break;
                 case MotionEvent.ACTION_MOVE:
                     mLastMotionEventY = ev.getY();
-                    mHoverDrawable.handleMoveEvent(ev);
-                    switchIfNecessary();
-                    invalidate();
-                    handled = true;
+                    handled = handleMoveEvent(ev);
                     break;
                 case MotionEvent.ACTION_UP:
-                    handleUpEvent();
+                    handled = handleUpEvent();
                     mLastMotionEventY = -1;
-                    handled = true;
                     break;
                 case MotionEvent.ACTION_CANCEL:
-                    handleUpEvent();
-//                    handled = handleCancelEvent();
+                    handled = handleCancelEvent();
                     mLastMotionEventY = -1;
-                    handled = true;
                     break;
                 default:
                     break;
@@ -1014,11 +1051,78 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         if(firstVisibleItem != 0 && mHeaderView.getVisiableHeight() != 0){
             mHeaderView.setShowHeight(0);
         }
+
+        mCurrentFirstVisibleItem = firstVisibleItem;
+        mCurrentLastVisibleItem = firstVisibleItem + visibleItemCount;
+
+        mPreviousFirstVisibleItem = mPreviousFirstVisibleItem == -1 ? mCurrentFirstVisibleItem : mPreviousFirstVisibleItem;
+        mPreviousLastVisibleItem = mPreviousLastVisibleItem == -1 ? mCurrentLastVisibleItem : mPreviousLastVisibleItem;
+
+        if (mHoverDrawable != null) {
+            assert dragItemView != null;
+            float y = dragItemView.getY();
+            mHoverDrawable.onScroll(y);
+        }
+        Log.i(TAG, "onScroll : " + mIsSettlingHoverDrawable);
+
+        if (!mIsSettlingHoverDrawable) {
+            checkAndHandleFirstVisibleCellChange();
+            checkAndHandleLastVisibleCellChange();
+        }
+
+        mPreviousFirstVisibleItem = mCurrentFirstVisibleItem;
+        mPreviousLastVisibleItem = mCurrentLastVisibleItem;
     }
 
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
+        if (scrollState == SCROLL_STATE_IDLE && mHoverDrawable != null) {
+            handleMobileCellScroll();
+        }
+    }
 
+    /**
+     * Determines if the listview scrolled down enough to reveal a new cell at the
+     * bottom of the list. If so, switches the newly shown view with the mobile view.
+     */
+    private void checkAndHandleLastVisibleCellChange() {
+        if (mHoverDrawable == null || mAdapter == null || mCurrentLastVisibleItem <= mPreviousLastVisibleItem) {
+            return;
+        }
+
+        int position = getPositionForId(mMobileItemId);
+        if (position == AdapterView.INVALID_POSITION) {
+            return;
+        }
+
+        long switchItemId = position + 1  < mAdapter.getCount() - getHeaderViewsCount()
+                ? mAdapter.getItemId(position + 1)
+                : AdapterView.INVALID_POSITION;
+        View switchView = getViewForId(switchItemId);
+        if (switchView != null) {
+            switchViews(switchView, switchItemId, switchView.getHeight());
+        }
+    }
+
+    /**
+     * Determines if the listview scrolled up enough to reveal a new cell at the
+     * top of the list. If so, switches the newly shown view with the mobile view.
+     */
+    private void checkAndHandleFirstVisibleCellChange() {
+        if (mHoverDrawable == null || mAdapter == null || mCurrentFirstVisibleItem >= mPreviousFirstVisibleItem) {
+            return;
+        }
+
+        int position = getPositionForId(mMobileItemId);
+        if (position == AdapterView.INVALID_POSITION) {
+            return;
+        }
+
+        long switchItemId = position - 1 >= 0 ? mAdapter.getItemId(position - 1) : AdapterView.INVALID_POSITION;
+        View switchView = getViewForId(switchItemId);
+        if (switchView != null) {
+            switchViews(switchView, switchItemId, -switchView.getHeight());
+        }
     }
 
     @Override

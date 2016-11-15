@@ -5,16 +5,23 @@ import java.util.ArrayList;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Path;
+import android.graphics.PathMeasure;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -25,14 +32,18 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
+import android.view.animation.TranslateAnimation;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Scroller;
@@ -43,6 +54,7 @@ import com.huanglongyu.ToDoList.adapter.TestCursorAdapter;
 import com.huanglongyu.ToDoList.adapter.ToDoListAdapter;
 import com.huanglongyu.ToDoList.bean.ToDoitem;
 import com.huanglongyu.ToDoList.database.DbHelper;
+import com.huanglongyu.ToDoList.util.BitmapUtils;
 import com.huanglongyu.ToDoList.util.Logger;
 
 public class ToDoListView extends ListView implements OnScrollListener,HeaderView.OnHeaderTriggerListener {
@@ -94,6 +106,16 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     private Adapter mAdapter;
     private SwitchViewAnimator mSwitchViewAnimator;
     private OnItemMovedListener mOnItemMovedListener;
+
+    //done/dismiss animation start
+    private long mMoveItemId = AdapterView.INVALID_POSITION;
+    private HoverDrawable mMoveHoverDrawable;
+    private PathMeasure mPathMeasure;
+    private float[] mCurrentPosition = new float[2];
+    private static final int MOVE_ANIMATION_TIME = 400;
+
+
+
     /**
      * Specifies whether or not the hover drawable is currently being animated as result of an up / cancel event.
      */
@@ -271,7 +293,6 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         private class AnimateSwitchViewOnPreDrawListener implements ViewTreeObserver.OnPreDrawListener {
 
             private final long mSwitchId;
-
             private final float mTranslationY;
 
             AnimateSwitchViewOnPreDrawListener(final long switchId, final float translationY) {
@@ -502,6 +523,10 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         if (mHoverDrawable != null) {
             mHoverDrawable.draw(canvas);
         }
+
+        if (mMoveHoverDrawable != null) {
+            mMoveHoverDrawable.draw(canvas);
+        }
     }
 
     @Override
@@ -586,7 +611,8 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
 //        }
 //        Logger.i("scrollRight begin :" + currentScrollX + " end:" + (-delta));
         mScroller.startScroll(currentScrollX, 0, -currentScrollX, 0, DONE_ANIMATION_TIME);
-        performDone(itemView,slidePosition);
+        int dataPostion = slidePosition - getHeaderViewsCount();
+        performDone(itemView, dataPostion);
         postInvalidate();
     }
 
@@ -931,70 +957,180 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     }
 
     //FIXME: toColor
-    private void performDone(final View doneView, final int donePosition) {
+    private void performDone(final View doneView, final int doneDataPosition) {
 //        Logger.i("doneView :" + doneView.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG));
-        ValueAnimator animator = ValueAnimator.ofFloat(0.2f, 1).setDuration(DONE_ANIMATION_TIME);
-        animator.setInterpolator(new LinearInterpolator());
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        ValueAnimator animatorAlpha = ValueAnimator.ofFloat(0.1f, 1).setDuration(DONE_ANIMATION_TIME);
+        animatorAlpha.setInterpolator(new LinearInterpolator());
+        animatorAlpha.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 float alpha = (Float)valueAnimator.getAnimatedValue();
                 doneView.setAlpha(alpha);
             }
         });
-        int fromColor , toColor;
-        if (MainActivity.USE_CURSOR) {
-            Cursor c = (Cursor)getAdapter().getItem(donePosition);
-            int isDone = c.getInt(c.getColumnIndex(DbHelper.DONE));
-            if (isDone == DbHelper.ITEM_DONE) {
-                fromColor = 0xFFDCDCDC;
-                toColor = 0xFF787878;
-            } else {
-                fromColor = 0xFF787878;
-                toColor = c.getInt(c.getColumnIndex(DbHelper.COLOR));
-            }
-        } else {
-            ToDoitem item = (ToDoitem)getAdapter().getItem(donePosition);
-            int isDone = item.getIsDone();
-            if (isDone == DbHelper.ITEM_DONE) {
-                fromColor = 0xFFDCDCDC;
-                toColor = 0xFF787878;
-            } else {
-                fromColor = 0xFF787878;
-                toColor = item.getColor();
-            }
-        }
+//        int fromColor , toColor;
+//        if (MainActivity.USE_CURSOR) {
+//            Cursor c = (Cursor)getAdapter().getItem(doneDataPosition);
+//            int isDone = c.getInt(c.getColumnIndex(DbHelper.DONE));
+//            if (isDone == DbHelper.ITEM_DONE) {
+//                fromColor = 0xFFDCDCDC;
+//                toColor = 0xFF787878;
+//            } else {
+//                fromColor = 0xFF787878;
+//                toColor = c.getInt(c.getColumnIndex(DbHelper.COLOR));
+//            }
+//        } else {
+//            ToDoitem item = (ToDoitem)mAdapter.getItem(doneDataPosition);
+//            int isDone = item.getIsDone();
+//            if (isDone == DbHelper.ITEM_DONE) {
+//                fromColor = 0xFFDCDCDC;
+//                toColor = 0xFF787878;
+//            } else {
+//                fromColor = 0xFF787878;
+//                toColor = item.getColor();
+//            }
+//        }
 
-        ValueAnimator animatorColor = ValueAnimator.ofObject(new ArgbEvaluator(), fromColor, toColor).setDuration(DONE_ANIMATION_TIME);
-        animatorColor.addUpdateListener(new ValueAnimator.AnimatorUpdateListener(){
+//        ValueAnimator animatorColor = ValueAnimator.ofObject(new ArgbEvaluator(), fromColor, toColor).setDuration(DONE_ANIMATION_TIME);
+//        animatorColor.addUpdateListener(new ValueAnimator.AnimatorUpdateListener(){
+//
+//            @Override
+//            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+//                int color = (Integer)valueAnimator.getAnimatedValue();
+//                View content;
+//                if (MainActivity.USE_CURSOR) {
+//                    content = doneView.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG);
+//                } else {
+//                    content = (View)doneView.getTag(R.id.TAG_VIEW_ID);
+//                }
+//                content.setBackgroundColor(color);
+//
+//        }});
 
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int color = (Integer)valueAnimator.getAnimatedValue();
-                View content;
-                if (MainActivity.USE_CURSOR) {
-                    content = doneView.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG);
-                } else {
-                    content = (View)doneView.getTag(R.id.TAG_VIEW_ID);
-                }
-                content.setBackgroundColor(color);
+        animatorAlpha.addListener(new AnimatorListenerAdapter() {
 
-        }});
-
-        animator.addListener(new AnimatorListenerAdapter() {
-
+            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onAnimationEnd(Animator animation) {
-                if (mOnToDoListViewTriggerListener != null) {
-                    mOnToDoListViewTriggerListener.onToggleDone(donePosition - 1);
+//                if (mOnToDoListViewTriggerListener != null) {
+//                    mOnToDoListViewTriggerListener.onToggleDone(doneDataPosition);
+//                }
+                int firstDoneDataPostion = ((ToDoListAdapter)mAdapter).getFirstDoneDataPostion();
+//                mMoveItemId = mAdapter.getItemId(doneDataPosition);
+//                doneView.setVisibility(View.INVISIBLE);
+//                getChildAt(firstDoneDataPostion).setVisibility(View.INVISIBLE);
+//                Log.i(TAG, "firstDoneDataPostion:" + firstDoneDataPostion
+//                        + " doneDataPosition:" + doneDataPosition + " top:" + doneView.getTop());
+
+
+                float toX = getChildAt(firstDoneDataPostion).getX();
+                float toY = getChildAt(firstDoneDataPostion).getTop();
+                float fromX = doneView.getX();
+                float fromY = doneView.getTop();
+
+                int j = 0;
+                ((ToDoListAdapter) mAdapter).moveItems(doneDataPosition, firstDoneDataPostion);
+                if (firstDoneDataPostion > doneDataPosition) {
+                    for (int i = doneDataPosition + 2; i<= firstDoneDataPostion; i++) {
+                        View switchView = getChildAt(i);
+                        switchView.setBackground(new ColorDrawable(0xFFAABBCC));
+                        MoveViewAnimator move = new MoveViewAnimator(switchView, doneView);
+                        move.doMove();
+                        invalidate();
+                        j++;
+                    }
                 }
+                mMoveHoverDrawable = new HoverDrawable(doneView, mLastMotionEventY);
+
+                Path path = new Path();
+                path.moveTo(fromX, fromY);
+                path.quadTo((toY + fromY) / 2, (toY + fromY) / 2, toX, toY);
+                mPathMeasure = new PathMeasure(path, false);
+
+                Log.i(TAG, "from :" + fromX + "," + fromY + " to:" + toX + "," + toY);
+
+                ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, mPathMeasure.getLength());
+                valueAnimator.setDuration(MOVE_ANIMATION_TIME);
+                final int left = mMoveHoverDrawable.getBounds().left;
+                valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                        float value = (Float) valueAnimator.getAnimatedValue();
+                        mPathMeasure.getPosTan(value, mCurrentPosition, null);
+                        Log.i(TAG, "[0]: " + mCurrentPosition[0] + "  [1]: " + mCurrentPosition[1]);
+
+                        mMoveHoverDrawable.setBounds(left + (int)mCurrentPosition[0]
+                        , (int)mCurrentPosition[1], left + (int)mCurrentPosition[0] + mMoveHoverDrawable.getIntrinsicWidth(),
+                                (int)mCurrentPosition[1] + mMoveHoverDrawable.getIntrinsicHeight());
+                        postInvalidate();
+                    }
+                });
+                valueAnimator.start();
                 sendCancelEvent();
             }
 
         });
 //        mPendingDone.add(new PendingDoneData(donePosition, doneView));
-        animator.start();
-        animatorColor.start();
+        animatorAlpha.start();
+//        animatorColor.start();
+    }
+
+    private class MoveViewAnimator {
+        private View moveView;
+        private View doneView;
+
+        public MoveViewAnimator(View v, View done) {
+            moveView = v;
+            doneView = done;
+        }
+
+        public void doMove() {
+            getViewTreeObserver().addOnPreDrawListener(new AnimateMoveViewOnPreDrawListener(moveView, doneView));
+        }
+
+        private class AnimateMoveViewOnPreDrawListener implements ViewTreeObserver.OnPreDrawListener {
+            private View moveView, doneView;
+            private long translationY;
+
+
+            public AnimateMoveViewOnPreDrawListener(View v, View done) {
+                moveView = v;
+                translationY = done.getHeight();
+                doneView = done;
+            }
+
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+            @Override
+            public boolean onPreDraw() {
+                getViewTreeObserver().removeOnPreDrawListener(this);
+                if (moveView != null) {
+                    moveView.setTranslationY(translationY);
+                    moveView.animate().translationY(0)
+                            .setListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    super.onAnimationEnd(animation);
+                                    if (doneView.getVisibility() != View.VISIBLE) {
+                                        doneView.setVisibility(View.VISIBLE);
+                                    }
+                                    mMoveHoverDrawable = null;
+                                }
+
+                                @Override
+                                public void onAnimationStart(Animator animation) {
+                                    super.onAnimationStart(animation);
+                                    if (doneView.getVisibility() == View.VISIBLE) {
+                                        doneView.setVisibility(View.INVISIBLE);
+                                    }
+                                }
+                            })
+                            .setDuration(MOVE_ANIMATION_TIME)
+                            .start();
+                }
+
+                return true;
+            }
+        }
     }
 
     private void sendCancelEvent() {

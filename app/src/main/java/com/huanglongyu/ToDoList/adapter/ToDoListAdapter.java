@@ -34,6 +34,18 @@ public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListen
         data = acc.getAllItems();
     }
 
+    public int getFirstDoneDataPostion() {
+        int firstDoneId = mDataAccess.getFirstDoneItemId();
+        for (int i = 0; i < data.size(); i++) {
+            ToDoitem item = data.get(i);
+            if (item.getId() == firstDoneId) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+
     public void remove(int position) {
         ToDoitem toDoitem = data.remove(position);
         mDataAccess.removeItem(toDoitem.getId());
@@ -79,6 +91,14 @@ public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListen
         ToDoitem firstItem = data.set(positionOne, (ToDoitem) getItem(positionTwo));
         notifyDataSetChanged();
         data.set(positionTwo, firstItem);
+    }
+
+    @Override
+    public void moveItems(int doneDataPosition, int firstDoneDataPostion) {
+        ToDoitem doneItem = data.remove(doneDataPosition);
+        notifyDataSetChanged();
+        data.set(firstDoneDataPostion - 1, doneItem);
+
     }
 
     public void updateItem(int position, ToDoitem item) {

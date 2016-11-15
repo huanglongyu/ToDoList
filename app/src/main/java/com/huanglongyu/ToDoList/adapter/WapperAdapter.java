@@ -85,4 +85,6 @@ public abstract class WapperAdapter extends BaseAdapter{
 
     public abstract void swapItems(int positionOne, int positionTwo);
 
+    public abstract void moveItems(int positionOne, int positionTwo);
+
 }

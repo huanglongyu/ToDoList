@@ -139,6 +139,17 @@ public class DataAccess {
         return cursor;
     }
 
+    public int getFirstDoneItemId() {
+        Cursor c = db.rawQuery("select MIN(_id) as minid from todolist where done = ?",
+                new String[]{DbHelper.ITEM_DONE + ""});
+         c.moveToFirst();
+        if (c.getCount() > 0) {
+            return c.getInt(c.getColumnIndex("minid"));
+        } else {
+            return -1;
+        }
+    }
+
     public Cursor getAll() {
         return db
                 .query(DbHelper.TABLE_NAME, null, null, null, null, null, null);

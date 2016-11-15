@@ -184,6 +184,8 @@ public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouc
         }
     }
 
+
+
     private ContentValues getCurrentValues(Cursor c) {
         if (c != null) {
             ContentValues values = new ContentValues();

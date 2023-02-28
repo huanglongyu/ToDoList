@@ -10,11 +10,11 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout.LayoutParams;
-import com.huanglongyu.ToDoList.R;
 import com.huanglongyu.ToDoList.bean.ToDoitem;
 import com.huanglongyu.ToDoList.database.DataAccess;
 import com.huanglongyu.ToDoList.database.DbHelper;
 import com.huanglongyu.ToDoList.util.Utils;
+import com.huanglongyu.todolist.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListen
         data = acc.getAllItems();
     }
 
-    public int getFirstDoneDataPostion() {
+    public int getFirstDoneDataPosition() {
         int firstDoneId = mDataAccess.getFirstDoneItemId();
         Log.i(TAG, "firstDoneId:" + firstDoneId);
         for (int i = 0; i < data.size(); i++) {
@@ -78,7 +78,7 @@ public class ToDoListAdapter extends WapperAdapter implements View.OnTouchListen
     }
 
     @Override
-    public Object getItem(int position) {
+    public ToDoitem getItem(int position) {
         return data.get(position);
     }
 

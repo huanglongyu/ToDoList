@@ -23,7 +23,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.huanglongyu.ToDoList.R;
+import com.huanglongyu.todolist.R;
 
 public class HeaderView extends FrameLayout implements View.OnTouchListener {
     private static final String TAG = "HeaderView";

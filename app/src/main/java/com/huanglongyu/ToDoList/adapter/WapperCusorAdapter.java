@@ -3,7 +3,6 @@ package com.huanglongyu.ToDoList.adapter;
 import android.content.Context;
 import android.database.Cursor;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +10,8 @@ import android.widget.CursorAdapter;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
-import com.huanglongyu.ToDoList.R;
 import com.huanglongyu.ToDoList.view.ToDoListView;
+import com.huanglongyu.todolist.R;
 
 public abstract class WapperCusorAdapter extends CursorAdapter {
     private static final String TAG = "WapperCusorAdapter";

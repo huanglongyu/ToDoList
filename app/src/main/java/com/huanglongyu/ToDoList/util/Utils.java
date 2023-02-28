@@ -5,11 +5,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.view.View;
 
-import com.huanglongyu.ToDoList.R;
 import com.huanglongyu.ToDoList.adapter.TestCursorAdapter;
+import com.huanglongyu.ToDoList.adapter.ToDoListAdapter;
 import com.huanglongyu.ToDoList.bean.ToDoitem;
 import com.huanglongyu.ToDoList.database.DataAccess;
 import com.huanglongyu.ToDoList.database.DbHelper;
+import com.huanglongyu.todolist.R;
 
 public class Utils {
     private static int ISDONE = -100;
@@ -90,6 +91,16 @@ public class Utils {
     }
 
     public static void updateCurrentBackground(Context context, TestCursorAdapter adapter, DataAccess da, int position, View view) {
+        Cursor c = (Cursor)adapter.getItem(position);
+        int newcolor = updateCurrentBackgroundWithoutSave(context, view, c);
+        //this is ugly
+        if (newcolor == ISDONE) {
+            return;
+        }
+        da.updateItemBackGround(c.getInt(c.getColumnIndex(DbHelper.ID)), newcolor);
+    }
+
+    public static void updateListAdapterBackground(Context context, ToDoListAdapter adapter, DataAccess da, int position, View view) {
         Cursor c = (Cursor)adapter.getItem(position);
         int newcolor = updateCurrentBackgroundWithoutSave(context, view, c);
         //this is ugly

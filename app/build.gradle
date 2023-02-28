@@ -1,13 +1,16 @@
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    namespace 'com.huanglongyu.todolist'
+    compileSdk 33
 
     defaultConfig {
-        applicationId "com.hly.todolist"
-        minSdkVersion 14
-        targetSdkVersion 24
+        applicationId "com.huanglongyu.todolist"
+        minSdk 23
+        targetSdk 33
         versionCode 1
         versionName "1.0"
     }
@@ -20,7 +23,5 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.0.0'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
 }

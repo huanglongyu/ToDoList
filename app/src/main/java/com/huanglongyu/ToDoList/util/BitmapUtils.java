@@ -2,8 +2,9 @@ package com.huanglongyu.ToDoList.util;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.support.annotation.NonNull;
 import android.view.View;
+
+import androidx.annotation.NonNull;
 
 /**
  * Created by hly on 11/7/16.

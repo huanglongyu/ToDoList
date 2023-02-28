@@ -9,8 +9,8 @@ import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
-import com.huanglongyu.ToDoList.R;
 import com.huanglongyu.ToDoList.view.ToDoListView;
+import com.huanglongyu.todolist.R;
 
 public abstract class WapperAdapter extends BaseAdapter{
     protected Context mContext;

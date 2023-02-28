@@ -17,12 +17,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout.LayoutParams;
 
-import com.huanglongyu.ToDoList.R;
 import com.huanglongyu.ToDoList.database.DataAccess;
 import com.huanglongyu.ToDoList.database.DataLoader;
 import com.huanglongyu.ToDoList.database.DbHelper;
 import com.huanglongyu.ToDoList.util.Logger;
 import com.huanglongyu.ToDoList.util.Utils;
+import com.huanglongyu.todolist.R;
 
 public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouchListener, LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "TestCursorAdapter";
@@ -41,11 +41,26 @@ public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouc
         mInflater = LayoutInflater.from(context);
         mDataAccess = access;
         mCursor = mDataAccess.getAll();
-        ((Activity)context).getLoaderManager().initLoader(LOADER_ID, null, this);
+        ((Activity) context).getLoaderManager().initLoader(LOADER_ID, null, this);
     }
 
     public void setDataObserverListener(DataAccess.DataObserverListener l) {
         mDataObserverListener = l;
+    }
+
+    public int getFirstDoneDataPosition() {
+        int oldPosition = mCursor.getPosition();
+        int count = mCursor.getCount();
+        for (int i = 0; i < count; i++) {
+            mCursor.moveToPosition(i);
+            int isDone = mCursor.getInt(mCursor.getColumnIndex(DbHelper.DONE));
+            Log.i(TAG, "oldPosition: " + oldPosition + " count: " + count + " isDone:" + isDone);
+            if (isDone == DbHelper.ITEM_DONE) {
+                mCursor.moveToPosition(oldPosition);
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override
@@ -62,7 +77,8 @@ public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouc
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> arg0) {}
+    public void onLoaderReset(Loader<Cursor> arg0) {
+    }
 
     //    @Override
 //    public View newView(Context arg0, Cursor arg1, ViewGroup arg2) {
@@ -89,18 +105,18 @@ public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouc
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
-        if(view instanceof EditText){
-            ((ViewGroup)view.getParent()).setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+        if (view instanceof EditText) {
+            ((ViewGroup) view.getParent()).setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
             if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                listenedEditText = (EditText)view;
+                listenedEditText = (EditText) view;
 //                listenedEditText.setOnEditorActionListener(editorActionListener);
             }
-        }else if(view instanceof ViewGroup){
-            ((ViewGroup)view).setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+        } else if (view instanceof ViewGroup) {
+            ((ViewGroup) view).setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
             if (listenedEditText != null) {
 //                listenedEditText.setOnEditorActionListener(null);
 //                listenedEditText.removeTextChangedListener(textWatcher);
-                int id = (Integer)listenedEditText.getTag();
+                int id = (Integer) listenedEditText.getTag();
                 Logger.i("saved text:" + listenedEditText.getText() + " id:" + id);
                 mDataObserverListener.onContendUpdate(id, listenedEditText.getText().toString());
                 listenedEditText = null;
@@ -176,13 +192,14 @@ public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouc
             Log.i("swapItems", "oneRowId:" + oneRowId + " oneContent:" + oneContent +
                     " towRowId:" + towRowId + " twoContent:" + twoContent + " positionOne:" + positionOne +
                     " positionTwo:" + positionTwo);
-            mDataAccess.updateItemAll(towRowId , one);
+            mDataAccess.updateItemAll(towRowId, one);
             swapCursor(mDataAccess.getAll());
             mDataAccess.updateItemAll(oneRowId, two);
             swapCursor(mDataAccess.getAll());
             mCursor = mDataAccess.getAll();
         }
     }
+
 
 
 
@@ -195,7 +212,7 @@ public class TestCursorAdapter extends WapperCusorAdapter implements View.OnTouc
             values.put(DbHelper.CONTENT, c.getString(c.getColumnIndex(DbHelper.CONTENT)));
             return values;
         }
-        return  null;
+        return null;
     }
 
     //   private OnEditorActionListener editorActionListener = new OnEditorActionListener(){

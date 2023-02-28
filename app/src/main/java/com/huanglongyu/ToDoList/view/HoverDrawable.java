@@ -5,9 +5,10 @@ package com.huanglongyu.ToDoList.view;
  */
 
 import android.graphics.drawable.BitmapDrawable;
-import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 import android.view.View;
+
+import androidx.annotation.NonNull;
 
 import com.huanglongyu.ToDoList.util.BitmapUtils;
 

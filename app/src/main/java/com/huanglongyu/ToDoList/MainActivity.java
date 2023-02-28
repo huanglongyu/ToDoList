@@ -1,8 +1,6 @@
 package com.huanglongyu.ToDoList;
 
 import android.app.Activity;
-import android.app.LoaderManager;
-import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -26,8 +24,8 @@ import com.huanglongyu.ToDoList.util.Utils;
 import com.huanglongyu.ToDoList.view.OnItemMovedListener;
 import com.huanglongyu.ToDoList.view.PreImeRelativeLayout;
 import com.huanglongyu.ToDoList.view.ToDoListView;
+import com.huanglongyu.todolist.R;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -43,7 +41,7 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
     private TestCursorAdapter mTestCursorAdapter;
     public static final boolean USE_CURSOR = false;
     private static final String TAG = "MainActivity";
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,7 +61,7 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
         mToDoListView.setOnItemLongClickListener(this);
         mToDoListView.setOnItemMovedListener(this);
 
-        mPreImeRelativeLayout = (PreImeRelativeLayout)findViewById(R.id.parent);
+        mPreImeRelativeLayout = (PreImeRelativeLayout) findViewById(R.id.parent);
         mPreImeRelativeLayout.setToDoListView(mToDoListView);
 
         mDataAccess = new DataAccess(this);
@@ -100,9 +98,9 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
         DisplayMetrics dm = getResources().getDisplayMetrics();
         int w = dm.widthPixels;
         int h = dm.heightPixels - view.getHeight() - height;
-        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)dimView.getLayoutParams();
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) dimView.getLayoutParams();
         params.width = w;
-        params.height = h ;
+        params.height = h;
         params.topMargin = height + view.getHeight();
         dimView.setLayoutParams(params);
     }
@@ -130,7 +128,7 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
 
     @Override
     public void onDownTriggered() {
-        Log.i(TAG , "onDownTriggered");
+        Log.i(TAG, "onDownTriggered");
         mToDoListView.setHeaderFocus(true);
         dimView.setVisibility(View.VISIBLE);
     }
@@ -183,7 +181,7 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
     @Override
     public void onTaskClear(int dismissPosition) {
         if (USE_CURSOR) {
-            Cursor c = (Cursor)mTestCursorAdapter.getItem(dismissPosition);
+            Cursor c = (Cursor) mTestCursorAdapter.getItem(dismissPosition);
             mDataAccess.removeItem(c.getInt(c.getColumnIndex(DbHelper.ID)));
             listDataChanged();
         } else {
@@ -195,7 +193,7 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
     public void onToggleDone(int donePosition) {
         Logger.i("onDone:" + donePosition);
         if (USE_CURSOR) {
-            Cursor c = (Cursor)mTestCursorAdapter.getItem(donePosition);
+            Cursor c = (Cursor) mTestCursorAdapter.getItem(donePosition);
             int oldValue = c.getInt(c.getColumnIndex(DbHelper.DONE));
             int newValue;
             if (oldValue == DbHelper.ITEM_DONE) {
@@ -206,7 +204,7 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
             mDataAccess.updateItemIsDone(c.getInt(c.getColumnIndex(DbHelper.ID)), newValue);
             listDataChanged();
         } else {
-            ToDoitem item = (ToDoitem)mToDoListAdapter.getItem(donePosition);
+            ToDoitem item = (ToDoitem) mToDoListAdapter.getItem(donePosition);
             int oldValue = item.getIsDone();
             int newValue;
             if (oldValue == DbHelper.ITEM_DONE) {
@@ -224,9 +222,13 @@ public class MainActivity extends Activity implements OnItemClickListener, ToDoL
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-         View v = view.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG);
-         Utils.updateCurrentBackground(this, mTestCursorAdapter, mDataAccess, position -1, v);
-         listDataChanged();
+        View v = view.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG);
+        if (USE_CURSOR) {
+            Utils.updateCurrentBackground(this, mTestCursorAdapter, mDataAccess, position - 1, v);
+        } else {
+            Utils.updateCurrentBackgroundWithoutSave(this, view, mToDoListAdapter.getItem(position));
+        }
+        listDataChanged();
     }
 
     @Override

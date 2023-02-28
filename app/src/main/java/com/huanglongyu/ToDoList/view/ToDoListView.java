@@ -1,27 +1,18 @@
 package com.huanglongyu.ToDoList.view;
 
-import java.util.ArrayList;
-
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -32,32 +23,32 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
-import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
-import android.view.animation.TranslateAnimation;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Scroller;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+
 import com.huanglongyu.ToDoList.MainActivity;
-import com.huanglongyu.ToDoList.R;
 import com.huanglongyu.ToDoList.adapter.TestCursorAdapter;
 import com.huanglongyu.ToDoList.adapter.ToDoListAdapter;
 import com.huanglongyu.ToDoList.bean.ToDoitem;
 import com.huanglongyu.ToDoList.database.DbHelper;
-import com.huanglongyu.ToDoList.util.BitmapUtils;
 import com.huanglongyu.ToDoList.util.Logger;
+import com.huanglongyu.todolist.R;
 
-public class ToDoListView extends ListView implements OnScrollListener,HeaderView.OnHeaderTriggerListener {
+import java.util.ArrayList;
+
+public class ToDoListView extends ListView implements OnScrollListener, HeaderView.OnHeaderTriggerListener {
     public static final String ITEM_CONTENT_LAYOUT_TAG = "ITEM_CONTENT_LAYOUT_TAG";
     public static final String ITEM_CONTENT_LEFT_TAG = "ITEM_CONTENT_LEFT_TAG";
     public static final String ITEM_CONTENT_RIGHT_TAG = "ITEM_CONTENT_RIGHT_TAG";
@@ -75,7 +66,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     private OnToDoListViewTriggerListener mOnToDoListViewTriggerListener;
 
     private View itemView;
-//    private View rightView, leftView;
+    //    private View rightView, leftView;
     private int mTouchSlop;
     private boolean isDown;
     private boolean isSlide;
@@ -115,7 +106,6 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
     private static final int MOVE_ANIMATION_TIME = 400;
 
 
-
     /**
      * Specifies whether or not the hover drawable is currently being animated as result of an up / cancel event.
      */
@@ -152,17 +142,23 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         void animateSwitchView(final long switchId, final float translationY);
     }
 
-    public interface OnToDoListViewTriggerListener{
+    public interface OnToDoListViewTriggerListener {
         void onDownTriggered();
+
         void onUpTriggered();
+
         void onNewTaskCancelTriggered();
+
         void onNewTaskAddedTriggered(String item);
+
         void onTaskClear(int position);
+
         void onToggleDone(int position);
+
         void onHeaderInitFinished(int height);
     }
 
-    public void setOnToDoListViewTriggerListener(OnToDoListViewTriggerListener trigger){
+    public void setOnToDoListViewTriggerListener(OnToDoListViewTriggerListener trigger) {
         mOnToDoListViewTriggerListener = trigger;
     }
 
@@ -178,7 +174,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         mOnItemMovedListener = onItemMovedListener;
     }
 
-    public void setHeaderFocus(boolean focus){
+    public void setHeaderFocus(boolean focus) {
         mHeaderView.setFocus(focus);
     }
 
@@ -202,15 +198,15 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         mHeaderView.setMaxHeight(max);
     }
 
-    public int getHeadMaxHeight(){
+    public int getHeadMaxHeight() {
         return itemMaxHeight;
     }
 
-    public int getHeadHeight(){
+    public int getHeadHeight() {
         return mHeaderView.getHeight();
     }
 
-    public String getHeadText(){
+    public String getHeadText() {
         return mHeaderView.getEditTextContent();
     }
 
@@ -476,7 +472,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
 
         int listDatePosition = getPositionForId(mMobileItemId);
 
-        long aboveItemId = listDatePosition - 1  >= 0 ? mAdapter.getItemId(listDatePosition - 1) : AdapterView.INVALID_POSITION;
+        long aboveItemId = listDatePosition - 1 >= 0 ? mAdapter.getItemId(listDatePosition - 1) : AdapterView.INVALID_POSITION;
         long belowItemId = listDatePosition + 1 < getCount() - getHeaderViewsCount()
                 ? mAdapter.getItemId(listDatePosition + 1)
                 : AdapterView.INVALID_POSITION;
@@ -534,41 +530,41 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
             return super.dispatchTouchEvent(ev);
         }
         switch (ev.getAction()) {
-        case MotionEvent.ACTION_DOWN: {
-            addVelocityTracker(ev);
-            if (!mScroller.isFinished()) {
-                return super.dispatchTouchEvent(ev);
-            }
-            mDownX = ev.getRawX();
-            mDownY = ev.getRawY();
+            case MotionEvent.ACTION_DOWN: {
+                addVelocityTracker(ev);
+                if (!mScroller.isFinished()) {
+                    return super.dispatchTouchEvent(ev);
+                }
+                mDownX = ev.getRawX();
+                mDownY = ev.getRawY();
 
-            slidePosition = pointToPosition((int) ev.getX(), (int) ev.getY());
-            if (slidePosition == AdapterView.INVALID_POSITION) {
-                itemView = null;
-                return super.dispatchTouchEvent(ev);
-            }
+                slidePosition = pointToPosition((int) ev.getX(), (int) ev.getY());
+                if (slidePosition == AdapterView.INVALID_POSITION) {
+                    itemView = null;
+                    return super.dispatchTouchEvent(ev);
+                }
 //            View v = getChildAt(slidePosition - getFirstVisiblePosition());
 //            itemView = v.findViewWithTag(v.getTag(R.id.TAG_HODLER_ID));
 //            Logger.i("v:" + v  + " itemView:" + itemView);
-            itemView = getChildAt(slidePosition - getFirstVisiblePosition());
+                itemView = getChildAt(slidePosition - getFirstVisiblePosition());
 //            Logger.i("itemView:" + itemView + " " + itemView.getWidth());
-            break;
-        }
-        case MotionEvent.ACTION_MOVE: {
-            if (Math.abs(getXScrollVelocity()) > SNAP_VELOCITY
-                    || (Math.abs(ev.getRawX() - mDownX) > mTouchSlop && Math.abs(ev
-                    .getRawY() - mDownY) < mTouchSlop)) {
-                isSlide = true;
-                setOnItemLongClickListener(null);
-            } else if (Math.abs(ev
-                    .getRawY() - mDownY) > mTouchSlop) {
-                isDown = true;
+                break;
             }
-            break;
-        }
-        case MotionEvent.ACTION_UP:
-            recycleVelocityTracker();
-            break;
+            case MotionEvent.ACTION_MOVE: {
+                if (Math.abs(getXScrollVelocity()) > SNAP_VELOCITY
+                        || (Math.abs(ev.getRawX() - mDownX) > mTouchSlop && Math.abs(ev
+                        .getRawY() - mDownY) < mTouchSlop)) {
+                    isSlide = true;
+                    setOnItemLongClickListener(null);
+                } else if (Math.abs(ev
+                        .getRawY() - mDownY) > mTouchSlop) {
+                    isDown = true;
+                }
+                break;
+            }
+            case MotionEvent.ACTION_UP:
+                recycleVelocityTracker();
+                break;
         }
         return super.dispatchTouchEvent(ev);
     }
@@ -717,28 +713,28 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         if (isSlide && slidePosition != AdapterView.INVALID_POSITION) {
             addVelocityTracker(ev);
             switch (ev.getAction()) {
-            case MotionEvent.ACTION_MOVE:
-                itemView.scrollBy((int)mDownX - (int) (ev.getRawX()), 0);
-                mDownX = ev.getRawX();
-                velocityX = getXScrollVelocity();
+                case MotionEvent.ACTION_MOVE:
+                    itemView.scrollBy((int) mDownX - (int) (ev.getRawX()), 0);
+                    mDownX = ev.getRawX();
+                    velocityX = getXScrollVelocity();
 //                View left = itemView.findViewWithTag(ToDoListView.ITEM_CONTENT_LEFT_TAG);
 //                left.setVisibility(View.VISIBLE);
 //                Logger.i("left:" + left + " " + left.getWidth() + " " + left.getHeight());
 //                postInvalidate();
-                break;
-            case MotionEvent.ACTION_UP:
-                pendingSlide = true;
-                if (velocityX > SNAP_VELOCITY) {
-                    scrollRight();
-                } else if (velocityX < -SNAP_VELOCITY) {
-                    scrollLeft();
-                } else {
-                    scrollByDistanceX();
-                }
-                isSlide = false;
-                setOnItemLongClickListener((MainActivity)mContext);
-                recycleVelocityTracker();
-                break;
+                    break;
+                case MotionEvent.ACTION_UP:
+                    pendingSlide = true;
+                    if (velocityX > SNAP_VELOCITY) {
+                        scrollRight();
+                    } else if (velocityX < -SNAP_VELOCITY) {
+                        scrollLeft();
+                    } else {
+                        scrollByDistanceX();
+                    }
+                    isSlide = false;
+                    setOnItemLongClickListener((MainActivity) mContext);
+                    recycleVelocityTracker();
+                    break;
             }
             return true;
         }
@@ -767,10 +763,10 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                         limitToScroll = true;
                         updateHeaderHeight(deltaY);
 //                Logger.i("updateHeaderHeight");
-                    }else if((deltaY < 0 || mHeaderView.getVisiableHeight() <=0) && limitToScroll){
+                    } else if ((deltaY < 0 || mHeaderView.getVisiableHeight() <= 0) && limitToScroll) {
 //                Logger.i("ACTION_MOVE return true, limitToScroll:" + limitToScroll);
 //                return true;
-                    }else{
+                    } else {
 //                Logger.i("else ACTION_MOVE, deltaY:" + deltaY + " mHeaderView.getVisiableHeight():" + mHeaderView.getVisiableHeight());
                     }
 //            else if(getFirstVisiblePosition() != 0){
@@ -786,38 +782,38 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                         break;
                     }
 //            float movedY = (ev.getRawY() - mDownY) * 0.9f;
-                    if(mHeaderView.getBottom() > itemMaxHeight/2){
+                    if (mHeaderView.getBottom() > itemMaxHeight / 2) {
 //                int offset = itemMaxHeight - mHeaderView.getBottom();
                         int offset = itemMaxHeight - mHeaderView.getHeight();
 //                Log.i(TAG, "ACTION_UP  down!!!!!!!!height:" + height + " " + " offset:" + offset + " getTop:" + mHeaderView.getTop() + " getBottom:" +  mHeaderView.getBottom()
 //                        + " getFirstVisiblePosition:" + getFirstVisiblePosition() + " itemMaxHeight:" + itemMaxHeight);
-                        if(getFirstVisiblePosition() !=0){
+                        if (getFirstVisiblePosition() != 0) {
 //                    Logger.i("up!!!!!!!! setShowHeight 0," + getFirstVisiblePosition());
                             mHeaderView.setShowHeight(0);
                             this.invalidate();
                             break;
                         }
-                        if(offset != 0){
+                        if (offset != 0) {
 //                    Log.i(TAG, "ACTION_UP down!!!!!!!! startScroll 1, needToMovedY:" + mHeaderView.getBottom());
                             mScroller.startScroll(0, height, 0, offset, SLID_ANIMATION_TIME);
                             this.invalidate();
-                        } else if (offset == 0){
-                            if(mOnToDoListViewTriggerListener != null){
+                        } else if (offset == 0) {
+                            if (mOnToDoListViewTriggerListener != null) {
                                 mOnToDoListViewTriggerListener.onDownTriggered();
                             }
                         }
-                    }else{
+                    } else {
 //                int offset = mHeaderView.getBottom();
                         int offset = mHeaderView.getHeight();
-                        Logger.i("ACTION_UP  up!!!!!!!!height:" + height + " " + " offset:" + offset + " getTop:" + mHeaderView.getTop() + " getBottom:" +  mHeaderView.getBottom()
+                        Logger.i("ACTION_UP  up!!!!!!!!height:" + height + " " + " offset:" + offset + " getTop:" + mHeaderView.getTop() + " getBottom:" + mHeaderView.getBottom()
                                 + " getFirstVisiblePosition:" + getFirstVisiblePosition() + " itemMaxHeight:" + itemMaxHeight);
-                        if(getFirstVisiblePosition() !=0){
+                        if (getFirstVisiblePosition() != 0) {
 //                    Logger.i("up!!!!!!!! setShowHeight 0," + getFirstVisiblePosition());
                             mHeaderView.setShowHeight(0);
                             this.invalidate();
                             break;
                         }
-                        if(offset != 0){
+                        if (offset != 0) {
                             Logger.i("ACTION_UP up!!!!!!!! startScroll 2, needToMovedY:" + mHeaderView.getBottom() + " offset:" + offset);
                             mScroller.startScroll(0, height, 0, -offset, SLID_ANIMATION_TIME);
                             this.invalidate();
@@ -848,7 +844,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         return super.onTouchEvent(ev);
     }
 
-    public void HeadrollBack(){
+    public void HeadrollBack() {
         mHeaderView.setOverridDispatch(true);
         mScroller.startScroll(0, itemMaxHeight, 0, -itemMaxHeight, ROLLBACK_ANIMATION_TIME);
         this.invalidate();
@@ -870,7 +866,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
-                params.width = (int)valueAnimator.getAnimatedValue();
+                params.width = (int) valueAnimator.getAnimatedValue();
 //                Log.i(TAG, "onAnimationUpdate :" + params.width);
                 view.setLayoutParams(params);
                 view.requestLayout();
@@ -908,7 +904,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                 itemView.scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
                 if (mScroller.isFinished()) {
                     if (pendingDismiss) {
-                        performDismiss(itemView,slidePosition);
+                        performDismiss(itemView, slidePosition);
                         pendingDismiss = false;
                     } else if (pendingDone) {
 //                        performDone(itemView,slidePosition);
@@ -922,14 +918,14 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         }
         if (mScroller.computeScrollOffset()) {
 //            Logger.i("computeScroll mScroller.getCurrY():" + mScroller.getCurrY());
-            if(mScroller.getCurrY() == 0){
+            if (mScroller.getCurrY() == 0) {
                 mScroller.abortAnimation();
-                if(mOnToDoListViewTriggerListener != null){
+                if (mOnToDoListViewTriggerListener != null) {
                     mOnToDoListViewTriggerListener.onUpTriggered();
                 }
-            }else if(mScroller.getCurrY() == itemMaxHeight){
+            } else if (mScroller.getCurrY() == itemMaxHeight) {
                 mScroller.abortAnimation();
-                if(mOnToDoListViewTriggerListener != null){
+                if (mOnToDoListViewTriggerListener != null) {
                     mOnToDoListViewTriggerListener.onDownTriggered();
                 }
             }
@@ -957,66 +953,67 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
 
     //FIXME: toColor
     private void performDone(final View doneView, final int doneDataPosition) {
-//        Logger.i("doneView :" + doneView.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG));
+        Logger.i("doneView :" + doneView.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG));
+        Log.i(TAG, "doneView :" + doneView.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG));
         ValueAnimator animatorAlpha = ValueAnimator.ofFloat(0.1f, 1).setDuration(DONE_ANIMATION_TIME);
         animatorAlpha.setInterpolator(new LinearInterpolator());
-        animatorAlpha.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                float alpha = (Float)valueAnimator.getAnimatedValue();
-                doneView.setAlpha(alpha);
-            }
+        animatorAlpha.addUpdateListener(valueAnimator -> {
+            float alpha = (Float) valueAnimator.getAnimatedValue();
+            doneView.setAlpha(alpha);
         });
-//        int fromColor , toColor;
-//        if (MainActivity.USE_CURSOR) {
-//            Cursor c = (Cursor)getAdapter().getItem(doneDataPosition);
-//            int isDone = c.getInt(c.getColumnIndex(DbHelper.DONE));
-//            if (isDone == DbHelper.ITEM_DONE) {
-//                fromColor = 0xFFDCDCDC;
-//                toColor = 0xFF787878;
-//            } else {
-//                fromColor = 0xFF787878;
-//                toColor = c.getInt(c.getColumnIndex(DbHelper.COLOR));
-//            }
-//        } else {
-//            ToDoitem item = (ToDoitem)mAdapter.getItem(doneDataPosition);
-//            int isDone = item.getIsDone();
-//            if (isDone == DbHelper.ITEM_DONE) {
-//                fromColor = 0xFFDCDCDC;
-//                toColor = 0xFF787878;
-//            } else {
-//                fromColor = 0xFF787878;
-//                toColor = item.getColor();
-//            }
-//        }
+        int fromColor , toColor;
+        if (MainActivity.USE_CURSOR) {
+            Cursor c = (Cursor)getAdapter().getItem(doneDataPosition);
+            int isDone = c.getInt(c.getColumnIndex(DbHelper.DONE));
+            if (isDone == DbHelper.ITEM_DONE) {
+                fromColor = 0xFFDCDCDC;
+                toColor = 0xFF787878;
+            } else {
+                fromColor = 0xFF787878;
+                toColor = c.getInt(c.getColumnIndex(DbHelper.COLOR));
+            }
+        } else {
+            ToDoitem item = (ToDoitem)mAdapter.getItem(doneDataPosition);
+            int isDone = item.getIsDone();
+            if (isDone == DbHelper.ITEM_DONE) {
+                fromColor = 0xFFDCDCDC;
+                toColor = 0xFF787878;
+            } else {
+                fromColor = 0xFF787878;
+                toColor = item.getColor();
+            }
+        }
 
-//        ValueAnimator animatorColor = ValueAnimator.ofObject(new ArgbEvaluator(), fromColor, toColor).setDuration(DONE_ANIMATION_TIME);
-//        animatorColor.addUpdateListener(new ValueAnimator.AnimatorUpdateListener(){
-//
-//            @Override
-//            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-//                int color = (Integer)valueAnimator.getAnimatedValue();
-//                View content;
-//                if (MainActivity.USE_CURSOR) {
-//                    content = doneView.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG);
-//                } else {
-//                    content = (View)doneView.getTag(R.id.TAG_VIEW_ID);
-//                }
-//                content.setBackgroundColor(color);
-//
-//        }});
+        ValueAnimator animatorColor = ValueAnimator.ofObject(new ArgbEvaluator(), fromColor, toColor).setDuration(DONE_ANIMATION_TIME);
+        animatorColor.addUpdateListener(valueAnimator -> {
+            int color = (Integer)valueAnimator.getAnimatedValue();
+            View content;
+            if (MainActivity.USE_CURSOR) {
+                content = doneView.findViewWithTag(TestCursorAdapter.ITEM_VIEW_TAG);
+            } else {
+                content = (View)doneView.getTag(R.id.TAG_VIEW_ID);
+            }
+            content.setBackgroundColor(color);
+
+    });
 
         animatorAlpha.addListener(new AnimatorListenerAdapter() {
 
-//            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onAnimationEnd(Animator animation) {
+                Log.i(TAG, "onAnimationEnd");
 //                if (mOnToDoListViewTriggerListener != null) {
 //                    mOnToDoListViewTriggerListener.onToggleDone(doneDataPosition);
 //                }
-                final int firstDoneDataPostion = ((ToDoListAdapter)mAdapter).getFirstDoneDataPostion();
-                Log.i(TAG, "firstDoneDataPostion:" + firstDoneDataPostion +
-                        " childAtPostion:" + (firstDoneDataPostion - mCurrentFirstVisibleItem));
+                int firstDoneDataPosition;
+                if (MainActivity.USE_CURSOR) {
+                    firstDoneDataPosition = ((TestCursorAdapter) mAdapter).getFirstDoneDataPosition();
+                } else {
+                    firstDoneDataPosition = ((ToDoListAdapter) mAdapter).getFirstDoneDataPosition();
+                }
+                Log.i(TAG, "onAnimationEnd, firstDoneDataPosition = " + firstDoneDataPosition);
+                Log.i(TAG, "firstDoneDataPostion:" + firstDoneDataPosition +
+                        " childAtPostion:" + (firstDoneDataPosition - mCurrentFirstVisibleItem));
 //                mMoveItemId = mAdapter.getItemId(doneDataPosition);
 //                doneView.setVisibility(View.INVISIBLE);
 //                getChildAt(firstDoneDataPostion).setVisibility(View.INVISIBLE);
@@ -1024,14 +1021,14 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
 //                        + " doneDataPosition:" + doneDataPosition + " top:" + doneView.getTop());
 
 
-                float toX = getChildAt(firstDoneDataPostion - mCurrentFirstVisibleItem).getX();
-                float toY = getChildAt(firstDoneDataPostion - mCurrentFirstVisibleItem).getTop();
+                float toX = getChildAt(firstDoneDataPosition - mCurrentFirstVisibleItem).getX();
+                float toY = getChildAt(firstDoneDataPosition - mCurrentFirstVisibleItem).getTop();
                 float fromX = doneView.getX();
                 float fromY = doneView.getTop();
 
-                ((ToDoListAdapter) mAdapter).moveItems(doneDataPosition, firstDoneDataPostion);
-                if (firstDoneDataPostion > doneDataPosition) {
-                    for (int i = doneDataPosition + 2; i<= firstDoneDataPostion; i++) {
+                ((ToDoListAdapter) mAdapter).moveItems(doneDataPosition, firstDoneDataPosition);
+                if (firstDoneDataPosition > doneDataPosition) {
+                    for (int i = doneDataPosition + 2; i <= firstDoneDataPosition; i++) {
                         View switchView = getChildAt(i - mCurrentFirstVisibleItem);
 //                        switchView.setBackground(new ColorDrawable(0xFFAABBCC));
                         MoveViewAnimator move = new MoveViewAnimator(switchView, doneView);
@@ -1051,25 +1048,22 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
                 ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, mPathMeasure.getLength());
                 valueAnimator.setDuration(MOVE_ANIMATION_TIME);
                 final int left = mMoveHoverDrawable.getBounds().left;
-                valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                        float value = (Float) valueAnimator.getAnimatedValue();
-                        mPathMeasure.getPosTan(value, mCurrentPosition, null);
+                valueAnimator.addUpdateListener(valueAnimator1 -> {
+                    float value = (Float) valueAnimator1.getAnimatedValue();
+                    mPathMeasure.getPosTan(value, mCurrentPosition, null);
 //                        Log.i(TAG, "[0]: " + mCurrentPosition[0] + "  [1]: " + mCurrentPosition[1]);
 
-                        mMoveHoverDrawable.setBounds(left + (int)mCurrentPosition[0]
-                        , (int)mCurrentPosition[1], left + (int)mCurrentPosition[0] + mMoveHoverDrawable.getIntrinsicWidth(),
-                                (int)mCurrentPosition[1] + mMoveHoverDrawable.getIntrinsicHeight());
-                        invalidate();
-                    }
+                    mMoveHoverDrawable.setBounds(left + (int) mCurrentPosition[0]
+                            , (int) mCurrentPosition[1], left + (int) mCurrentPosition[0] + mMoveHoverDrawable.getIntrinsicWidth(),
+                            (int) mCurrentPosition[1] + mMoveHoverDrawable.getIntrinsicHeight());
+                    invalidate();
                 });
                 valueAnimator.addListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
                         if (mOnItemMovedListener != null) {
-                            mOnItemMovedListener.onItemMoved(doneDataPosition, firstDoneDataPostion - 1);
+                            mOnItemMovedListener.onItemMoved(doneDataPosition, firstDoneDataPosition - 1);
                         }
                     }
                 });
@@ -1181,7 +1175,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
         animator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                if(mOnToDoListViewTriggerListener != null){
+                if (mOnToDoListViewTriggerListener != null) {
                     mOnToDoListViewTriggerListener.onTaskClear(dismissPosition - 1);
                 }
                 ViewGroup.LayoutParams lp;
@@ -1202,7 +1196,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
 
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-        if(firstVisibleItem != 0 && mHeaderView.getVisiableHeight() != 0){
+        if (firstVisibleItem != 0 && mHeaderView.getVisiableHeight() != 0) {
             mHeaderView.setShowHeight(0);
         }
 
@@ -1248,7 +1242,7 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
             return;
         }
 
-        long switchItemId = position + 1  < mAdapter.getCount() - getHeaderViewsCount()
+        long switchItemId = position + 1 < mAdapter.getCount() - getHeaderViewsCount()
                 ? mAdapter.getItemId(position + 1)
                 : AdapterView.INVALID_POSITION;
         View switchView = getViewForId(switchItemId);
@@ -1280,14 +1274,14 @@ public class ToDoListView extends ListView implements OnScrollListener,HeaderVie
 
     @Override
     public void onNewTaskCancelTriggered() {
-        if(mOnToDoListViewTriggerListener != null){
+        if (mOnToDoListViewTriggerListener != null) {
             mOnToDoListViewTriggerListener.onNewTaskCancelTriggered();
         }
     }
 
     @Override
     public void onNewTaskAddedTriggerd(String item) {
-        if(mOnToDoListViewTriggerListener != null){
+        if (mOnToDoListViewTriggerListener != null) {
             mOnToDoListViewTriggerListener.onNewTaskAddedTriggered(item);
         }
     }
